@@ -5,3 +5,6 @@ iOS/bin
 iOS/obj/iPhoneSimulator/Debug
 packages
 Editor/obj/Debug
+bin
+iOS/obj
+obj
