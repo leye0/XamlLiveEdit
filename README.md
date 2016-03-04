@@ -1,5 +1,5 @@
 # XamlLiveEdit
-Live edit Xamarin Forms Xaml
+Live editing of Xamarin Forms Xaml
 
 TODO
 
@@ -8,14 +8,14 @@ TODO
 
 2. Communication protocol improvement: 
 
-A. Either improve the TCP start stop logic. StartKey/StopKey as consts shared in Mobile / Editor app. Reinit connection everytime instead of keeping it alive?
+=> Either improve the TCP start stop logic. StartKey/StopKey as consts shared in Mobile / Editor app. Reinit connection everytime instead of keeping it alive?
 
 - Depending on the starting code, return the proper switch-case of what to do.
 - Needs to indicate how bytes to read.
 
-B. Or use WebSocket
+=> Or use WebSocket
 
-C. Pseudo web-server. (Send raw http request)
+=> Or make a pseudo web-server. (Send raw http request)
 
 3. Make connection to server easier. Add a button to indicate where is the server, then the device pushes its coordinates to the server. Subscribers logic.
 
