@@ -51,7 +51,7 @@
             <child>
               <widget class="Gtk.MenuBar" id="menubar5">
                 <property name="MemberName" />
-                <node name="__gtksharp_140_Stetic_Editor_ActionMenuBar" type="Menubar">
+                <node name="menubar5" type="Menubar">
                   <node type="Menu" action="FileAction">
                     <node type="Menuitem" action="OpenAction1" />
                     <node type="Menuitem" action="SaveAction" />

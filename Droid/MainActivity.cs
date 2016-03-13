@@ -7,8 +7,9 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Android.OS;
+using LiveXamlEdit.Forms;
 
-namespace LiveXamlEdit.Droid
+namespace LiveXamlEdit.Android.Forms
 {
 	[Activity (Label = "LiveXamlEdit.Droid", Icon = "@drawable/icon", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
 	public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsApplicationActivity

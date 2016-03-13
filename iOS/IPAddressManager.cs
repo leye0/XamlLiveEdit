@@ -2,9 +2,11 @@
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using Xamarin.Forms;
-using LiveXamlEdit;[assembly: Dependency(typeof(LiveXamlEdit.iOS.IPAddressManager))]
+using LiveXamlEdit.Forms;
+using Mesharp;
 
-namespace LiveXamlEdit.iOS
+[assembly: Dependency(typeof(LiveXamlEdit.Forms.iOS.IPAddressManager))]
+namespace LiveXamlEdit.Forms.iOS
 {
     class IPAddressManager : IIPAddressManager
     {

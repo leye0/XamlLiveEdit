@@ -9,8 +9,15 @@ namespace Editor
 		{
 			Application.Init ();
 			MainWindow win = new MainWindow ();
-			win.Show ();
+			try
+			{
+				win.Show ();
 			Application.Run ();
+			} catch (Exception e)
+			{
+			var ab = e.Message;
+			}
+
 		}
 	}
 }

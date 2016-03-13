@@ -5,7 +5,7 @@ using System.Linq;
 using Foundation;
 using UIKit;
 
-namespace LiveXamlEdit.iOS
+namespace LiveXamlEdit.Forms.iOS
 {
 	public class Application
 	{

@@ -1,7 +1,8 @@
 ﻿using System.Net;
-using Xamarin.Forms;[assembly: Dependency(typeof(LiveXamlEdit.Android.IPAddressManager))]
+using Xamarin.Forms;
+using Mesharp;[assembly: Dependency(typeof(LiveXamlEdit.Forms.Droid.IPAddressManager))]
 
-namespace LiveXamlEdit.Android
+namespace LiveXamlEdit.Forms.Droid
 {
     class IPAddressManager : IIPAddressManager
     {

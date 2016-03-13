@@ -94,11 +94,21 @@
     <Reference Include="Sockets.Plugin.Abstractions">
       <HintPath>..\packages\rda.SocketsForPCL.1.2.2\lib\Xamarin.iOS10\Sockets.Plugin.Abstractions.dll</HintPath>
     </Reference>
+    <Reference Include="PCLStorage">
+      <HintPath>..\packages\PCLStorage.1.0.2\lib\portable-Xamarin.iOS+Xamarin.Mac\PCLStorage.dll</HintPath>
+    </Reference>
+    <Reference Include="PCLStorage.Abstractions">
+      <HintPath>..\packages\PCLStorage.1.0.2\lib\portable-Xamarin.iOS+Xamarin.Mac\PCLStorage.Abstractions.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LiveXamlEdit.csproj">
+    <ProjectReference Include="..\LiveXamlEdit.Forms.csproj">
       <Project>{6187D63F-7B80-4BDF-B0ED-8DBC533F9720}</Project>
-      <Name>LiveXamlEdit</Name>
+      <Name>LiveXamlEdit.Forms</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Mesharp\Mesharp.csproj">
+      <Project>{DC6B5E9C-4B3A-49D6-802F-215AC59AE8DC}</Project>
+      <Name>Mesharp</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

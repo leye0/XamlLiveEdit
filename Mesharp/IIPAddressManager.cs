@@ -1,4 +1,4 @@
-﻿namespace LiveXamlEdit
+﻿namespace Mesharp
 {
     public interface IIPAddressManager
     {

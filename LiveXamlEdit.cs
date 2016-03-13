@@ -2,12 +2,14 @@
 using System.Linq;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using Sockets.Plugin;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Reflection;
+using Sockets.Plugin;
+using Mesharp;
+using LiveXamlEdit.Messaging;
 
-namespace LiveXamlEdit
+namespace LiveXamlEdit.Forms
 {
 	public class App : Application
 	{
@@ -27,96 +29,45 @@ namespace LiveXamlEdit
 			};
 
 			var ipAddress = DependencyService.Get<IIPAddressManager>().GetIPAddress();
-			InitServer();
-		}
+			var messaging = new Messaging.Messaging(ipAddress, 11001, Device.OS.ToString());
 
-		protected override void OnStart ()
-		{
-			// Handle when your app starts
-		}
-
-		protected override void OnSleep ()
-		{
-			// Handle when your app sleeps
-		}
-
-		protected override void OnResume ()
-		{
-			// Handle when your app resumes
-		}
-
-		private async void InitServer()
-		{
-			var listenPort = 11000;
-			var listener = new TcpSocketListener();
-
-			// when we get connections, read byte-by-byte from the socket's read stream
-			listener.ConnectionReceived += async (sender, args) => 
+			messaging.ConnectWith(new ClientInfos
 			{
-			  var client = args.SocketClient; 
-			  var xamlContent = string.Empty;
-
-			  while (true)
-			  {
-			    // read from the 'ReadStream' property of the socket client to receive data
-			    var nextByte = await Task.Run(()=> client.ReadStream.ReadByte());
-
-			    if (nextByte == -1)
-			    {
-			    	break;
-			    }
-
-			    xamlContent += (char)nextByte;
-
-			    if (xamlContent.StartsWith("1234567890"))
-			    {
-					xamlContent = string.Empty;
-			    }
-
-				if (xamlContent.EndsWith("0987654321"))
-			    {
-					xamlContent = xamlContent.Replace("0987654321", "");
-
-					if (xamlContent.Contains("<?xml"))
-					{
-						ShowPage(xamlContent);
-						xamlContent = string.Empty;
-					}
-			    }
-			  }
-			};
-
-			// bind to the listen port across all interfaces
-			await listener.StartListeningAsync(listenPort);
+				IPAddress = "192.168.2.17",
+				Port = 11006
+			});
 		}
+
+		protected override void OnStart () {}
+		protected override void OnSleep () {}
+		protected override void OnResume () {}
 
 		private void ShowPage (string xamlContents)
 		{
 			try
 			{
-				var page = new ContentPage{Padding = new Thickness(0,0,0,0)};
+				var page = new ContentPage{ Padding = new Thickness (0, 0, 0, 0) };
 
 				var s = (
-				((MethodInfo)(
-				((TypeInfo)(
-				(
-				typeof(Xamarin.Forms.Xaml.ArrayExtension).GetTypeInfo().Assembly.DefinedTypes
-				.Where(t => t.FullName == "Xamarin.Forms.Xaml.Extensions")
-				.First()
-				)
-				)).DeclaredMembers
-				.Where(t => !((MethodInfo)t).Attributes.HasFlag(System.Reflection.MethodAttributes.Family))
-				.First()
-				)).MakeGenericMethod(typeof(ContentPage))
-				).Invoke(null, new object[]{page, xamlContents}) != null;
+				            ((MethodInfo)(
+				                ((TypeInfo)(
+				                    (
+				                        typeof(Xamarin.Forms.Xaml.ArrayExtension).GetTypeInfo ().Assembly.DefinedTypes
+				.Where (t => t.FullName == "Xamarin.Forms.Xaml.Extensions")
+				.First ()
+				                    )
+				                )).DeclaredMembers
+				.Where (t => !((MethodInfo)t).Attributes.HasFlag (System.Reflection.MethodAttributes.Family))
+				.First ()
+				            )).MakeGenericMethod (typeof(ContentPage))
+				        ).Invoke (null, new object[]{ page, xamlContents }) != null;
 
-				Xamarin.Forms.Device.BeginInvokeOnMainThread(() =>
-				{
+				Xamarin.Forms.Device.BeginInvokeOnMainThread (() => {
 					MainPage = page;
 				});
 			} catch (Exception e)
 			{
-				System.Diagnostics.Debug.WriteLine(e.Message);
+				System.Diagnostics.Debug.WriteLine (e.Message);
 			}
 		}
 	}

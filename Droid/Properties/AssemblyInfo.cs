@@ -5,12 +5,12 @@ using Android.App;
 // Information about this assembly is defined by the following attributes.
 // Change them to the values specific to your project.
 
-[assembly: AssemblyTitle ("LiveXamlEdit.Droid")]
+[assembly: AssemblyTitle ("LiveXamlEdit.Forms.Droid")]
 [assembly: AssemblyDescription ("")]
 [assembly: AssemblyConfiguration ("")]
 [assembly: AssemblyCompany ("")]
 [assembly: AssemblyProduct ("")]
-[assembly: AssemblyCopyright ("Leon")]
+[assembly: AssemblyCopyright ("LiveXamlEdit")]
 [assembly: AssemblyTrademark ("")]
 [assembly: AssemblyCulture ("")]
 

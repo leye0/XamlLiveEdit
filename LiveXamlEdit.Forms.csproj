@@ -32,7 +32,6 @@
   <ItemGroup>
     <Compile Include="LiveXamlEdit.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="IIPAddressManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="packages\Xamarin.Forms.1.3.5.6335\build\portable-win+net45+wp80+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms.targets" Condition="Exists('packages\Xamarin.Forms.1.3.5.6335\build\portable-win+net45+wp80+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms.targets')" />
@@ -52,5 +51,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Mesharp\Mesharp.csproj">
+      <Project>{DC6B5E9C-4B3A-49D6-802F-215AC59AE8DC}</Project>
+      <Name>Mesharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="LiveXamlEdit.MessageService\LiveXamlEdit.Messaging.csproj">
+      <Project>{6798ED4F-B72D-43D8-8D32-11FDE19B6126}</Project>
+      <Name>LiveXamlEdit.Messaging</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

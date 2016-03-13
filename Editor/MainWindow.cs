@@ -2,6 +2,10 @@
 using Gtk;
 using System.Threading.Tasks;
 using Sockets.Plugin;
+using Mesharp;
+using System.Collections.Generic;
+using LiveXamlEdit.Messaging;
+using LiveXamlEdit.Desktop;
 
 public partial class MainWindow: Gtk.Window
 {
@@ -9,6 +13,7 @@ public partial class MainWindow: Gtk.Window
 	{
 		Build ();
 		Init();
+		InitClient();
 	}
 
 	protected void OnDeleteEvent (object sender, DeleteEventArgs a)
@@ -24,7 +29,6 @@ public partial class MainWindow: Gtk.Window
 			OpenOFD();
 		};
 
-		InitClient();
 		textview2.Editable = true;
 		textview2.Buffer.Changed += (o, args) => 
 		{
@@ -55,31 +59,14 @@ public partial class MainWindow: Gtk.Window
 	    filechooser.Destroy();
 	}
 
-	TcpSocketClient _client;
-
-	private async void InitClient ()
+	private void InitClient ()
 	{
-//		var address = "192.168.2.13";
-		var address = "127.0.0.1";
-		var port = 11000;
-		_client = new TcpSocketClient ();
-		await _client.ConnectAsync (address, port);
-	}
-
-	private async void SendData(string data)
-	{
-		var bytes = System.Text.Encoding.UTF8.GetBytes(data);
-		_client.WriteStream.Write (bytes, 0, bytes.Length);
-		await _client.WriteStream.FlushAsync ();
-	}
-
-	private async void DisconnectClient()
-	{
-		await _client.DisconnectAsync ();
+		var ipAddress = new IPAddressManager().GetIPAddress();
+		var messaging = new Messaging(ipAddress, 11006, "Desktop");
 	}
 
 	private void RefreshXaml()
 	{
-		SendData("1234567890" + textview2.Buffer.Text + "0987654321");
+//		SendData("1234567890" + textview2.Buffer.Text + "0987654321");
 	}
 }
