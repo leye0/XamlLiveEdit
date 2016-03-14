@@ -1,11 +1,8 @@
-﻿using System;
-using Gtk;
-using System.Threading.Tasks;
-using Sockets.Plugin;
-using Mesharp;
-using System.Collections.Generic;
-using LiveXamlEdit.Messaging;
+﻿using Gtk;
+using System;
 using LiveXamlEdit.Desktop;
+using LiveXamlEdit.Messaging;
+using System.Collections.Generic;
 
 public partial class MainWindow: Gtk.Window
 {
@@ -62,7 +59,7 @@ public partial class MainWindow: Gtk.Window
 	private void InitClient ()
 	{
 		var ipAddress = new IPAddressManager().GetIPAddress();
-		var messaging = new Messaging(ipAddress, 11006, "Desktop");
+		var messaging = new Messaging(ipAddress, 11006, "Desktop", "DesktopTest");
 	}
 
 	private void RefreshXaml()

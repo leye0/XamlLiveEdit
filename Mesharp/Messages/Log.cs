@@ -1,10 +1,10 @@
 ﻿namespace Mesharp
 {
-	public class Message
+	public class Log
 	{
-		public Message() {}
+		public Log() {}
 
-		public Message (string text)
+		public Log (string text)
 		{
 			Text = text;
 		}

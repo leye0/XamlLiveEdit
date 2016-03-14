@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using Xamarin.Forms;
-using Mesharp;[assembly: Dependency(typeof(LiveXamlEdit.Forms.Droid.IPAddressManager))]
+using LiveXamlEdit.Common;[assembly: Dependency(typeof(LiveXamlEdit.Forms.Droid.IPAddressManager))]
 
 namespace LiveXamlEdit.Forms.Droid
 {

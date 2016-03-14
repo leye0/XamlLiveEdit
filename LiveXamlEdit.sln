@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mesharp", "Mesharp\Mesharp.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveXamlEdit.Messaging", "LiveXamlEdit.MessageService\LiveXamlEdit.Messaging.csproj", "{6798ED4F-B72D-43D8-8D32-11FDE19B6126}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LiveXamlEdit.Common", "LiveXamlEdit.Common\LiveXamlEdit.Common.shproj", "{CF44D2F0-5208-4F24-8042-A5ACB56808D9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

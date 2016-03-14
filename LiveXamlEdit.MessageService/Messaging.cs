@@ -1,8 +1,6 @@
-﻿using System;
-using Mesharp;
+﻿using Mesharp;
+using System;
 using System.Threading.Tasks;
-using PCLStorage;
-using System.IO;
 
 namespace LiveXamlEdit.Messaging
 {
@@ -13,28 +11,27 @@ namespace LiveXamlEdit.Messaging
 	{
 		public Client Client { get; set; }
 
-		public Messaging (string ipAddress, int port, string platform)
+		public Messaging (string ipAddress, int port, string platform, string friendlyName)
 		{
-			Client = Client.Create(ipAddress, port, platform);
-			Client.RegisterMessageEventHandler(new SynchronizeFile()).EventHandler += OnSynchronizeFile;
-//			SynchronizeFile();
+			Client = Client.Create(ipAddress, port, platform, friendlyName);
+			Client.AddHandler(new ConnectWith()).EventHandler += OnConnectWith;
+			Client.AddHandler(new ReturnPeer()).EventHandler += OnReturnPeer;
+
 		}
 
-//		public async Task SynchronizeFile()
-//		{
-//		}
-
-		private void OnSynchronizeFile (MessageToHandle<SynchronizeFile> sender, MessageEventArgs<SynchronizeFile> e)
+		void OnReturnPeer (MessageToHandle<ReturnPeer> sender, MessageEventArgs<ReturnPeer> e)
 		{
-			var fileData = e.Message;
-			var file = (File) fileData.Content;
+			
+		}
+
+		void OnConnectWith (MessageToHandle<Mesharp.ConnectWith> sender, MessageEventArgs<Mesharp.ConnectWith> e)
+		{
 		}
 
 		public async Task ConnectWith (ClientInfos destinationClientInfos)
 		{
 			var originClientInfo = Client.ClientInfos;
-			await Client.Send(new ConnectWith(originClientInfo), Guid.NewGuid(), destinationClientInfos);
+			await Client.Send(new ConnectWith(originClientInfo, Client.Peers.ToArray()), Guid.NewGuid(), destinationClientInfos);
 		}
 	}
 }
-

@@ -3,14 +3,18 @@ using Mesharp;
 
 namespace Mesharp
 {
-	public class ReturnPeer : Message
+	public class ReturnPeer
 	{
 		public ReturnPeer() {}
 
-		public ReturnPeer (Peer returnedPeer)
+		public ReturnPeer (Peer returnedPeer, Peer[] sharedPeers)
 		{
-			Content = returnedPeer;
-			ContentType = typeof(Peer).FullName;
+			ReturnedPeer = returnedPeer;
+			SharedPeers = sharedPeers;
 		}
+
+		public Peer ReturnedPeer { get; set; }
+
+		public Peer[] SharedPeers { get; set; }
 	}
 }

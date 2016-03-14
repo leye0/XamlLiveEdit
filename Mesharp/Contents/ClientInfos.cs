@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Mesharp
+﻿namespace Mesharp
 {
 	public class ClientInfos
 	{
@@ -11,6 +9,8 @@ namespace Mesharp
 		public int Port { get; set; }
 
 		public string Platform { get; set; }
+
+		public System.Guid PeerToken { get; set; }
 	}
 }
 

@@ -1,9 +1,7 @@
-﻿using System;
+﻿using Xamarin.Forms;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using Xamarin.Forms;
-using LiveXamlEdit.Forms;
-using Mesharp;
+using LiveXamlEdit.Common;
 
 [assembly: Dependency(typeof(LiveXamlEdit.Forms.iOS.IPAddressManager))]
 namespace LiveXamlEdit.Forms.iOS
@@ -12,7 +10,7 @@ namespace LiveXamlEdit.Forms.iOS
     {
         public string GetIPAddress()
         {
-            String ipAddress = "";
+            var ipAddress = "";
 
             foreach (var netInterface in NetworkInterface.GetAllNetworkInterfaces())
             {
@@ -24,7 +22,10 @@ namespace LiveXamlEdit.Forms.iOS
                         if (addrInfo.Address.AddressFamily == AddressFamily.InterNetwork)
                         {
                             ipAddress = addrInfo.Address.ToString();
-
+							if (ipAddress.StartsWith ("192"))
+							{
+								return ipAddress;
+							}
                         }
                     }
                 }

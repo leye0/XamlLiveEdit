@@ -1,26 +1,21 @@
 ﻿using System;
-using System.Linq;
-using Sockets.Plugin;
-using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.IO;
-using Sockets.Plugin.Abstractions;
+using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
+using Sockets.Plugin;
+using Sockets.Plugin.Abstractions;
+using System.Collections;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Mesharp
 {
-	public class Peer
-	{
-		public ClientInfos ClientInfos { get; set; }
-
-		public Guid Token { get; set; }
-	}
-
 	public class Client
 	{
-		public static Client Create (string ipAddress, int port, string platform)
+		public static Client Create (string ipAddress, int port, string platform, string friendlyName)
 		{
-			return new Client(ipAddress, port, platform);
+			return new Client(ipAddress, port, platform, friendlyName);
 		}
 
 		public static byte[] MessageSignature = new byte[16] { 110, 108, 89, 202, 220, 203, 79, 76, 156, 153, 160, 132, 85, 194, 39, 233 };
@@ -33,14 +28,21 @@ namespace Mesharp
 
 		public ClientInfos ClientInfos { get; set; }
 
-		public Client (string ipAddress, int port, string platform)
+		public Client (string ipAddress, int port, string platform, string friendlyName)
 		{
 			ClientInfos = new ClientInfos()
 			{
 				IPAddress = ipAddress,
 				Port = port,
 				Platform = platform,
+				PeerToken = Guid.NewGuid()
 			};
+
+			AddHandler(new ConnectWith()).EventHandler += OnConnectWith;
+			AddHandler(new ReturnPeer()).EventHandler += OnReturnPeer;
+			AddHandler(new Ping()).EventHandler += OnPing;
+			AddHandler(new Pong()).EventHandler += OnPong;
+			AddHandler(new BroadcastPeers()).EventHandler += OnBroadcastPeers;
 
 			Init();
 		}
@@ -50,9 +52,6 @@ namespace Mesharp
 			var listenPort = ClientInfos.Port;
 
 			var listener = new TcpSocketListener ();
-
-			RegisterMessageEventHandler(new ConnectWith()).EventHandler += OnConnectWith;
-			RegisterMessageEventHandler(new ReturnPeer()).EventHandler += OnReturnPeer;
 
 			listener.ConnectionReceived += async (sender, args) => {
 
@@ -94,8 +93,9 @@ namespace Mesharp
 	
 						messageToken = new Guid(guidBuffer);
 
-						if (isBroadcast && BroadcastMessageHistory.Contains(messageToken))
+						if (Broadcasted.Contains(messageToken))
 						{
+							await client.DisconnectAsync();
 							return;
 						}
 
@@ -111,36 +111,34 @@ namespace Mesharp
 						var contentBuffer = new byte[len];
 						contentBuffer = await ReadOrTimeout(client, contentBuffer.Length, TimeSpan.FromSeconds(2));
 
-						// DEBUG:
 						var json = System.Text.Encoding.UTF8.GetString(contentBuffer, 0, contentBuffer.Length);
-						// TryDeserialize
-						var rawOutput = new object();
-						var deserialized = SimpleJson.TryDeserializeObject(json, out rawOutput);
-						if (deserialized)
+
+						var deserialized = JsonConvert.DeserializeObject(json) as JObject;
+
+						if (deserialized != null)
 						{
-							var message = SimpleJson.DeserializeObject<Message>(json);
+							var typeFullName = (deserialized.GetValue("TypeFullName") as JToken).ToString();
+							var innerMessage = (deserialized.GetValue("Message") as JToken).ToString();
+							var typedMessage = JsonConvert.DeserializeObject(innerMessage, FindType(typeFullName));
 
 							// If the peertoken is not part of the list and non-empty, and we are not broadcasting, it is totally irrelevant for us.
-							if (peerToken != Guid.Empty && !Peers.Any(x => x.Token == peerToken) && !isBroadcast && message.Kind != typeof(ReturnPeer).FullName)
+							if (peerToken != Guid.Empty && !Peers.Any(x => x.Token == peerToken) && !isBroadcast && typeFullName != typeof(ReturnPeer).FullName)
 							{
 								return;
 							}
 
-							var messageType = typeof(Message).GetTypeInfo().Assembly.DefinedTypes.FirstOrDefault(x => x.FullName.ToLower() == message.Kind.ToLower());
-							var messageTyped = Activator.CreateInstance(messageType.AsType()) as Message;
-							var contentType = typeof(Message).GetTypeInfo().Assembly.DefinedTypes.FirstOrDefault(x => x.FullName.ToLower() == message.ContentType.ToLower());
-
-							var content = SimpleJson.DeserializeObject(message.Content.ToString(), contentType.AsType());
-
-							(messageTyped as Message).Content = content;
-							(messageTyped as Message).Kind = message.Kind;
-							HandleMessage(messageTyped, peerToken);
+							HandleMessage(typedMessage, peerToken, new Guid?(messageToken), isBroadcast);
+							HandleMessage(new Log(deserialized.ToString()), peerToken, messageToken, false);
 						}
 
 					} 
 					catch (Exception e)
 					{
-						var ab = e.Message;
+						var peer = Peers.FirstOrDefault(x => client.RemoteAddress.ToString().ToLower().Contains(x.ClientInfos.IPAddress.ToLower()));
+						if (peer != null)
+						{
+							HandleMessage(new Log("Error: " + e.Message), peer.Token, Guid.Empty, false);
+						}
 					}
 					finally
 					{
@@ -149,58 +147,106 @@ namespace Mesharp
 				}
 			};
 
-			// bind to the listen port across all interfaces
 			await listener.StartListeningAsync (listenPort);
+		}
+
+		// TODO: Older clientInfos could override newer clientInfos. Priority should be based on a date
+		void OnBroadcastPeers (MessageToHandle<BroadcastPeers> sender, MessageEventArgs<BroadcastPeers> e)
+		{
+			var peersList = e.Message.Peers.ToList();
+
+			foreach (var newPeer in peersList)
+			{
+				if (Peers.Any (x => x.ClientInfos.IPAddress == newPeer.ClientInfos.IPAddress))
+				{
+					Peers.RemoveAll(x => x.ClientInfos.IPAddress == newPeer.ClientInfos.IPAddress);
+				}
+
+				Peers.Add(newPeer);
+			}
+		}
+
+		void OnPing (MessageToHandle<Ping> sender, MessageEventArgs<Ping> e)
+		{
+			HandleMessage(new Log("Ping received for " + e.Message.PingId.ToString()), e.PeerToken, Guid.Empty, false);
+			Send(new Pong(e.Message.PingId), e.PeerToken);
+		}
+
+		void OnPong (MessageToHandle<Pong> sender, MessageEventArgs<Pong> e)
+		{
+			HandleMessage(new Log("Pong received for " + e.Message.PingId.ToString()), e.PeerToken, Guid.Empty, false);
+		}
+
+		public static Type FindType (string typeFullName)
+		{
+			var typeInfo = typeof(Message).GetTypeInfo().Assembly.DefinedTypes.FirstOrDefault(x => x.FullName == typeFullName);
+			return typeInfo != null ? typeInfo.AsType() : null;
+		}
+
+		void OnConnectWith (MessageToHandle<ConnectWith> sender, MessageEventArgs<ConnectWith> e)
+		{
+			var peers = e.Message.SharedPeers;
+
+			var otherPeer = new Peer 
+			{
+				ClientInfos = e.Message.ClientInfos,
+				Token = Guid.NewGuid()
+			};
+
+			var peersList = peers.ToList();
+			peersList.RemoveAll(x => x.ClientInfos.IPAddress == otherPeer.ClientInfos.IPAddress);
+			peersList.Add(otherPeer);
+			AddPeers(peersList.ToArray());
+
+			var myPeer = new Peer
+			{
+				ClientInfos = this.ClientInfos,
+				Token = Guid.NewGuid()	
+			};
+
+			Send(new ReturnPeer(myPeer, Peers.ToArray()), otherPeer.Token, null);
 		}
 
 		void OnReturnPeer (MessageToHandle<ReturnPeer> sender, MessageEventArgs<ReturnPeer> e)
 		{
-			Peers.Add((Peer) e.Message.Content);
+			var peers = e.Message.SharedPeers;
+			var peer = e.Message.ReturnedPeer;
+			var peersList = peers.ToList();
+			peersList.RemoveAll(x => x.ClientInfos.IPAddress == peer.ClientInfos.IPAddress);
+			peersList.Add(peer);
+			AddPeers(peersList.ToArray());
+			Broadcast(new BroadcastPeers(Peers.ToArray()));
 		}
 
-		void OnConnectWith (MessageToHandle<global::Mesharp.ConnectWith> sender, MessageEventArgs<global::Mesharp.ConnectWith> eventArgs)
+		private void AddPeers (Peer[] peers)
 		{
-			var clientInfo = (ClientInfos)eventArgs.Message.Content;
-
-			var newPeerToken = Guid.NewGuid();
-
-			var peer = new Peer 
+			foreach (var newPeer in peers)
 			{
-				ClientInfos = clientInfo,
-				Token = newPeerToken
-			};
+				if (Peers.Any (x => x.ClientInfos.IPAddress == newPeer.ClientInfos.IPAddress))
+				{
+					Peers.RemoveAll(x => x.ClientInfos.IPAddress == newPeer.ClientInfos.IPAddress);
+				}
 
-			if (!Peers.Any (x => x.Token == peer.Token))
-			{
-				Peers.Add(peer);
+				Peers.Add(newPeer);
 			}
-
-			Send(new ReturnPeer(new Peer { ClientInfos = this.ClientInfos, Token = newPeerToken }), newPeerToken, null);
 		}
 
 		private async Task<byte[]> ReadOrTimeout (ITcpSocketClient client, int bufferLen, TimeSpan timeout)
 		{
 			var buffer = new byte[bufferLen];
-			var success = false;
-			var startWait = DateTime.Now;
+			client.ReadStream.ReadTimeout = (int)timeout.TotalMilliseconds;
+			int read = 0, start = 0;
 
-			client.ReadStream.ReadTimeout = (int) timeout.TotalMilliseconds;
-			client.ReadStream.Read(buffer, 0, buffer.Length);
-			success = true;
-
-			await Task.Run(async () => 
+			while (read < bufferLen)
 			{
-				while(!success)
+				var count = client.ReadStream.Read (buffer, read, bufferLen - read);
+				read += count;
+				if (count == 0 && read < bufferLen)
 				{
-					await Task.Delay (10);
-					if (DateTime.Now - startWait > timeout)
-					{
-						client.ReadStream.Dispose();
-						client.DisconnectAsync();
-						throw new Exception("Timeout. Disconnect client.");
-					}
+					throw new Exception("OOPS");
+					break;
 				}
-			});
+			}
 
 			return buffer;
 		}
@@ -229,10 +275,20 @@ namespace Mesharp
 
 		public async Task ConnectWith (ClientInfos destinationClientInfos)
 		{
-			await Send(new ConnectWith(ClientInfos), Guid.NewGuid(), destinationClientInfos);
+			await Send(new ConnectWith(ClientInfos, Peers.ToArray()), Guid.Empty, destinationClientInfos);
 		}
 
-		public async Task Send (Message message, Guid peerToken, Guid? messageToken = null)
+		public async Task Send (object message)
+		{
+			await Send(message, Guid.NewGuid(), null);
+		}
+
+		public async Task Broadcast (object message)
+		{
+			await Send(message, Guid.NewGuid(), null, null);
+		}
+
+		public async Task Send (object message, Guid peerToken, Guid? messageToken = null)
 		{
 			var peer = Peers.FirstOrDefault (x => x.Token == peerToken);
 
@@ -244,10 +300,12 @@ namespace Mesharp
 			await Send(message, messageToken, peer.ClientInfos, peer.Token);
 		}
 
-		public async Task Send (Message message, Guid? messageToken, ClientInfos destinationClientInfos, Guid? peerToken = null)
+		public async Task Send (object message, Guid? messageToken, ClientInfos destinationClientInfos, Guid? peerToken = null)
 		{
-			var requestTypeSignature = Client.MessageSignature;
-			var jsonContent = message.AsJson();
+			var messageEnveloppe = new MessageEnveloppe (message);
+			var willBroadcast = destinationClientInfos == null && peerToken == null;
+			var requestTypeSignature = willBroadcast ? Client.BroadcastSignature : Client.MessageSignature;
+			var jsonContent = JsonConvert.SerializeObject (messageEnveloppe);
 			var lenInBytes = Client.IntToBytes (jsonContent.Length);
 
 			var dataBuilder = new List<byte> ();
@@ -255,107 +313,74 @@ namespace Mesharp
 			dataBuilder.AddRange (messageToken.GetValueOrDefault ().ToByteArray ());
 			dataBuilder.AddRange (peerToken.GetValueOrDefault ().ToByteArray ());
 			dataBuilder.AddRange (lenInBytes);
-			dataBuilder.AddRange (System.Text.Encoding.UTF8.GetBytes(jsonContent));
+			dataBuilder.AddRange (System.Text.Encoding.UTF8.GetBytes (jsonContent));
 
-			using (var client = new TcpSocketClient ())
+			var allClientInfos = new List<ClientInfos> ();
+
+			if (willBroadcast)
 			{
-				await client.ConnectAsync(destinationClientInfos.IPAddress, destinationClientInfos.Port);
-				var data = dataBuilder.ToArray();
-				await client.WriteStream.WriteAsync(data, 0, data.Length);
-				await client.WriteStream.FlushAsync ();
+				allClientInfos = Peers.Select (x => x.ClientInfos).ToList ();
+			} else
+			{
+				allClientInfos.Add (destinationClientInfos);
+			}
+
+			foreach (var clientInfos in allClientInfos)
+			{
+				using (var client = new TcpSocketClient ())
+				{
+					await client.ConnectAsync(clientInfos.IPAddress, clientInfos.Port);
+					var data = dataBuilder.ToArray();
+					await client.WriteStream.WriteAsync(data, 0, data.Length);
+					await client.WriteStream.FlushAsync ();
+				}
 			}
 		}
 
-//		public async Task Broadcast(Message message, object content)
-//		{
-//			
-//		}
-		
-
 		RegistrationDictionary Registrations = new RegistrationDictionary();
 
-		public MessageToHandle<T> RegisterMessageEventHandler<T>(T messageObject) where T : Message
+		public MessageToHandle<T> AddHandler<T>(T messageObject) where T : class
 		{ 
-			if (Registrations.ContainsRegistration (messageObject.GetType()))
-			{
-				throw new Exception("Message type already registred");
-			}
-
 			var messageToHandle = new MessageToHandle<T>();
 			Registrations.Add(messageObject.GetType(), messageToHandle);
 			return messageToHandle as MessageToHandle<T>;
 		}
 
-		public void HandleMessage(IMessage messageObject, Guid peerToken)
+		public HashSet<Guid> Broadcasted = new HashSet<Guid>();
+
+		public void HandleMessage (object messageObject, Guid peerToken, Guid? messageToken, bool isBroadcast = false)
 		{
-			var key = messageObject.GetType ();
-
-			if (Registrations.ContainsRegistration (key))
+			if (isBroadcast)
 			{
-				var value = Registrations.GetObject(key);
-				var onMessageEventMethod = value.GetType().GetRuntimeMethods().FirstOrDefault(x => x.Name == "OnMessageEvent");
-				var messageEventArgs = Activator.CreateInstance(onMessageEventMethod.GetParameters()[0].ParameterType);
+				Broadcasted.Add (messageToken.GetValueOrDefault ());
 
-//				public T Message { get; set; }
-//				public Guid PeerToken { get; set; }
-//
-				var messageProperty = messageEventArgs.GetType().GetRuntimeProperty("Message");
-				messageProperty.SetValue(messageEventArgs, messageObject, null);
+				foreach (var peer in Peers)
+				{
+					Send(messageObject, messageToken, peer.ClientInfos, peer.Token);	
+				}
+			}
 
-				var peerTokenProperty = messageEventArgs.GetType().GetRuntimeProperty("PeerToken");
-				peerTokenProperty.SetValue(messageEventArgs, peerToken, null);
+			var messageType = messageObject.GetType ();
 
+			if (Registrations.ContainsRegistration (messageType))
+			{
+				var eventHandlerCollection = ((IEnumerable)Registrations.GetObject (messageType));
 
-				onMessageEventMethod.Invoke(value, new object[1] {messageEventArgs});
+				foreach (var eventHandler in eventHandlerCollection)
+				{
+					var onMessageEventMethod = eventHandler.GetType().GetRuntimeMethods().FirstOrDefault(x => x.Name == "OnMessageEvent");
+					var messageEventArgs = Activator.CreateInstance(onMessageEventMethod.GetParameters()[0].ParameterType);
 
-//				value.OnMessageEvent(new MessageEventArgs<Message>() { Message = messageObject, PeerToken = peerToken } );
+					var messageProperty = messageEventArgs.GetType().GetRuntimeProperty("Message");
+					messageProperty.SetValue(messageEventArgs, messageObject, null);
+
+					var peerTokenProperty = messageEventArgs.GetType().GetRuntimeProperty("PeerToken");
+					peerTokenProperty.SetValue(messageEventArgs, peerToken, null);
+
+					onMessageEventMethod.Invoke(eventHandler, new object[1] {messageEventArgs});
+				}
 			}
 		}
-
-		public class RegistrationDictionary
-		{
-			private Dictionary<Type, object> _dict = new Dictionary<Type, object>();
-
-			public void Add<T>(Type key, T value) where T : class
-		    {
-		        _dict.Add(key, value);
-		    }
-
-			public bool ContainsRegistration(Type key)
-		    {
-		        return _dict.ContainsKey(key);
-		    }
-
-			public T GetValue<T>(Type key) where T : class
-		    {
-				return _dict[key] as T;
-		    }
-
-			public object GetObject(Type key)
-		    {
-				return _dict[key];
-		    }
-		}
 	}
-
-	public delegate void MessageHandler<T, U>(T sender, U e) where T : class;
-
-		public class MessageEventArgs<T> : System.EventArgs
-		{ 
-			public T Message { get; set; }
-			public Guid PeerToken { get; set; }
-		}
-
-		public class MessageToHandle<T>
-		{
-
-			public event MessageHandler<MessageToHandle<T>, MessageEventArgs<T>> EventHandler;
-
-			public virtual void OnMessageEvent(MessageEventArgs<T> a)
-		    {
-		        EventHandler(this, a);
-		    }
-		}
-
 }
 

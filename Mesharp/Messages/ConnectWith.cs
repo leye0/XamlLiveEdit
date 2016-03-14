@@ -2,16 +2,20 @@
 
 namespace Mesharp
 {
-	public class ConnectWith : Message
+	public class ConnectWith
 	{
 		public ConnectWith ()
 		{
 		}
 
-		public ConnectWith (ClientInfos clientInfos)
+		public ConnectWith (ClientInfos clientInfos, Peer[] sharedPeers)
 		{
-			Content = clientInfos;
-			ContentType = typeof(ClientInfos).FullName;
+			ClientInfos = clientInfos;
+			SharedPeers = sharedPeers;
 		}
+
+		public ClientInfos ClientInfos { get; set; }
+
+		public Peer[] SharedPeers { get; set; }
 	}
 }

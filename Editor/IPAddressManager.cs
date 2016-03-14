@@ -1,8 +1,6 @@
-﻿using System;
-using System.Net;
-using System.Net.Sockets;
+﻿using LiveXamlEdit.Common;
 using System.Net.NetworkInformation;
-using Mesharp;
+using System.Net.Sockets;
 
 namespace LiveXamlEdit.Desktop
 {
@@ -10,7 +8,7 @@ namespace LiveXamlEdit.Desktop
     {
 		public string GetIPAddress ()
 		{
-			String ipAddress = "";
+			var ipAddress = "";
 
 			foreach (var netInterface in NetworkInterface.GetAllNetworkInterfaces())
 			{
