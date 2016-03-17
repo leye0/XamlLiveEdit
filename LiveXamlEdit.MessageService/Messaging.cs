@@ -16,7 +16,7 @@ namespace LiveXamlEdit.Messaging
 
 		public Messaging (string ipAddress, int port, string platform, string friendlyName)
 		{
-			Client = Client.Create(ipAddress, port, platform, friendlyName);
+			Client = Client.Create(ipAddress, port, platform, friendlyName, this);
 
 			Client.AddHandler(new Log()).Received += OnLog;
 		}

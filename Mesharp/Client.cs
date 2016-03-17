@@ -13,9 +13,11 @@ namespace Mesharp
 {
 	public class Client
 	{
-		public static Client Create (string ipAddress, int port, string platform, string friendlyName)
+		private object ApplicationContext;
+
+		public static Client Create (string ipAddress, int port, string platform, string friendlyName, object applicationContext)
 		{
-			return new Client(ipAddress, port, platform, friendlyName);
+			return new Client(ipAddress, port, platform, friendlyName, applicationContext);
 		}
 
 		public static byte[] MessageSignature = new byte[16] { 110, 108, 89, 202, 220, 203, 79, 76, 156, 153, 160, 132, 85, 194, 39, 233 };
@@ -28,8 +30,10 @@ namespace Mesharp
 
 		public ClientInfos ClientInfos { get; set; }
 
-		public Client (string ipAddress, int port, string platform, string friendlyName)
+		public Client (string ipAddress, int port, string platform, string friendlyName, object applicationContext)
 		{
+			ApplicationContext = applicationContext;
+
 			ClientInfos = new ClientInfos()
 			{
 				IPAddress = ipAddress,
@@ -161,7 +165,7 @@ namespace Mesharp
 								throw new ErrorException (ErrorReason.OnReadMessageToken, e.Message);
 							}
 
-							if (Broadcasted.Contains (messageToken))
+							if (messageToken != Guid.Empty && Broadcasted.Contains (messageToken))
 							{
 								await client.DisconnectAsync ();
 								return;
@@ -299,9 +303,13 @@ namespace Mesharp
 			HandleMessage(new Log("Pong received for " + e.Message.PingId.ToString()), e.PeerToken, Guid.Empty, false);
 		}
 
-		public static Type FindType (string typeFullName)
+		public Type FindType (string typeFullName)
 		{
-			var typeInfo = typeof(Message).GetTypeInfo().Assembly.DefinedTypes.FirstOrDefault(x => x.FullName == typeFullName);
+			var knownTypes = ApplicationContext.GetType().GetTypeInfo().Assembly.DefinedTypes.ToList(); 
+			var mesharpDefinedTypes = this.GetType().GetTypeInfo().Assembly.DefinedTypes.ToList();
+			knownTypes.AddRange(mesharpDefinedTypes);
+			var typeInfo = knownTypes.FirstOrDefault(x => x.FullName == typeFullName);
+//			var typeInfo = typeof(Message).GetTypeInfo().Assembly.DefinedTypes.FirstOrDefault(x => x.FullName == typeFullName);
 			return typeInfo != null ? typeInfo.AsType() : null;
 		}
 

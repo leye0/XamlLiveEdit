@@ -5,8 +5,8 @@ using LiveXamlEdit.Common;
 using Mesharp;
 using Xamarin.Forms;
 using System.Threading.Tasks;
-using File = LiveXamlEdit.Messaging.File;
 using System.Collections.Generic;
+using LiveXamlEdit.Messaging;
 
 namespace LiveXamlEdit.Forms
 {
@@ -16,6 +16,51 @@ namespace LiveXamlEdit.Forms
 		ContentPage _page;
 
 		public App ()
+		{
+			//InitPlaygroundUi();
+
+			InitRenderingTestUi();
+		}
+
+		string ip;
+		void InitRenderingTestUi ()
+		{
+			ip = DependencyService.Get<IIPAddressManager> ().GetIPAddress ();
+			_messaging = new Messaging.Messaging (ip, 11111, Device.OS.ToString (), "MobileTest");
+
+			MainPage = _page = new ContentPage {
+				Content = new StackLayout {
+					VerticalOptions = LayoutOptions.Center,
+					Children = {
+						new Label {
+							XAlign = TextAlignment.Center,
+							Text = ip
+						},
+					}
+				}
+			};
+
+			_messaging.Client.AddHandler(new Xaml()).Received += OnXamlReceived;
+			_messaging.Client.ConnectWith(new ClientInfos
+			{
+				IPAddress = "192.168.12.165",
+				Port = 11006
+			});
+		}
+
+		void OnXamlReceived (MessageToHandle<Xaml> sender, MessageEventArgs<Xaml> e)
+		{
+			try
+			{
+				ShowPage(e.Message.XamlContent);
+			} 
+			catch (Exception exception)
+			{
+				_messaging.Client.Send(new XamlError(exception), e.PeerToken, null);
+			}
+		}
+
+		void InitPlaygroundUi()
 		{
 			var ipAddress = DependencyService.Get<IIPAddressManager> ().GetIPAddress ();
 
@@ -32,7 +77,7 @@ namespace LiveXamlEdit.Forms
 			var logScroll = new ScrollView { Orientation = ScrollOrientation.Vertical, VerticalOptions = LayoutOptions.FillAndExpand };
 			var logView = new Label()
 			{ 	
-				Text = "TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT ",
+				Text = "",
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.StartAndExpand,
 				HeightRequest = 1000,
@@ -91,14 +136,6 @@ namespace LiveXamlEdit.Forms
 					IPAddress = ip,
 					Port = port
 				});
-			};
-
-			sendMessageToFirst.Clicked += (s, e) => {
-				_messaging.Client.Send<Ping, Pong> (new Ping (Guid.NewGuid()), _messaging.Client.Peers.FirstOrDefault ().ClientInfos.PeerToken, Guid.NewGuid())
-				.Response += (Pong obj) =>
-				{
-					var ab = 1;
-				};
 			};
 
 			logClear.Clicked += (object sender, EventArgs e) => 

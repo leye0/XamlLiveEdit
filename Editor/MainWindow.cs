@@ -1,8 +1,10 @@
 ﻿using Gtk;
 using System;
+using System.Linq;
 using LiveXamlEdit.Desktop;
 using LiveXamlEdit.Messaging;
 using System.Collections.Generic;
+using Mesharp;
 
 public partial class MainWindow: Gtk.Window
 {
@@ -31,7 +33,7 @@ public partial class MainWindow: Gtk.Window
 		{
 			if (!string.IsNullOrWhiteSpace(textview2.Buffer.Text))
 			{
-				RefreshXaml();
+				RefreshXaml(textview2.Buffer.Text);
 			}
 		};
 	}
@@ -56,14 +58,28 @@ public partial class MainWindow: Gtk.Window
 	    filechooser.Destroy();
 	}
 
+	private Messaging _messaging;
+
 	private void InitClient ()
 	{
 		var ipAddress = new IPAddressManager().GetIPAddress();
-		var messaging = new Messaging(ipAddress, 11006, "Desktop", "DesktopTest");
+		_messaging = new Messaging(ipAddress, 11006, "Desktop", "DesktopTest");
+		_messaging.Client.AddHandler(new XamlError()).Received += XamlError;
+		_messaging.Client.AddHandler(new ConnectWith()).Received += OnConnect;
 	}
 
-	private void RefreshXaml()
+	void OnConnect (Mesharp.MessageToHandle<ConnectWith> sender, Mesharp.MessageEventArgs<ConnectWith> e)
 	{
-//		SendData("1234567890" + textview2.Buffer.Text + "0987654321");
+		
+	}
+
+	void XamlError (Mesharp.MessageToHandle<XamlError> sender, Mesharp.MessageEventArgs<XamlError> e)
+	{
+		
+	}
+
+	private void RefreshXaml(string xamlContent)
+	{
+		_messaging.Client.Send(new Xaml(xamlContent), _messaging.Client.Peers.FirstOrDefault(x => x.ClientInfos.Platform == "Android").ClientInfos.PeerToken, Guid.Empty);
 	}
 }
