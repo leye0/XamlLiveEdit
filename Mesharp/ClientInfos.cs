@@ -11,6 +11,8 @@
 		public string Platform { get; set; }
 
 		public System.Guid PeerToken { get; set; }
+
+		public System.DateTimeOffset? ConnectedOn { get; set; }
 	}
 }
 

@@ -34,7 +34,9 @@
     <Compile Include="Messaging.cs" />
     <Compile Include="Messages\SynchronizeFile.cs" />
     <Compile Include="PCLStorageOtherExtensions.cs" />
-    <Compile Include="Contents\File.cs" />
+    <Compile Include="Messages\File.cs" />
+    <Compile Include="Messages\Chocolat.cs" />
+    <Compile Include="Messages\Chips.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>
@@ -45,7 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Messages\" />
-    <Folder Include="Contents\" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="PCLStorage">
