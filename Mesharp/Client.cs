@@ -401,21 +401,24 @@ namespace Mesharp
 		public Request<Message> Send<Req> (Req message) where Req : class {return Send<Req,Message>(message, Guid.NewGuid(), null);}
 		public Request<Resp> Send<Req, Resp> (Req message) where Req : class where Resp : class, new()
 		{
-			return Send<Req, Resp>(message, Guid.NewGuid(), null);
+			return Send<Req, Resp>(message, Guid.Empty, Guid.NewGuid());
 		}
 
-		public Request<Message> Broadcast<Req> (Req message) where Req : class {return Send<Req, Message>(message);}
+		public Request<Message> Broadcast<Req> (Req message) where Req : class 
+		{
+			return Send<Req, Message>(message);
+		}
 		public Request<Resp> Broadcast<Req, Resp> (Req message) where Req : class where Resp : class, new()
 		{
-			return Send<Req, Resp>(message, Guid.NewGuid(), null);
+			return Send<Req, Resp>(message, Guid.Empty,  Guid.NewGuid());
 		}
 
 		public Request<Message> Send<Req> (Req message, Guid peerToken, Guid? messageToken = null) where Req : class {return Send<Req, Message>(message, peerToken, messageToken);}
 		public Request<Resp> Send<Req, Resp> (Req message, Guid peerToken, Guid? messageToken = null) where Req : class where Resp : class, new()
 		{
-			var peer = Peers.FirstOrDefault (x => x.ClientInfos.PeerToken == peerToken);
+			var peer = Peers.FirstOrDefault (x => x.ClientInfos.PeerToken == peerToken) ?? new Peer();
 
-			if (peerToken != Guid.Empty && peer == null)
+			if (peerToken != Guid.Empty && peer.ClientInfos == null)
 			{
 				return new Request<Resp>(Guid.Empty);
 			}
@@ -431,11 +434,12 @@ namespace Mesharp
 			var requestTypeSignature = willBroadcast ? Client.BroadcastSignature : Client.MessageSignature;
 			var jsonContent = JsonConvert.SerializeObject (messageEnveloppe);
 			var lenInBytes = Client.IntToBytes (jsonContent.Length);
+			var destinationPeerToken = willBroadcast ? Guid.Empty : destinationClientInfos.PeerToken;
 
 			var dataBuilder = new List<byte> ();
 			dataBuilder.AddRange (requestTypeSignature);
 			dataBuilder.AddRange (messageToken.GetValueOrDefault ().ToByteArray ());
-			dataBuilder.AddRange (destinationClientInfos.PeerToken.ToByteArray ());
+			dataBuilder.AddRange (destinationPeerToken.ToByteArray ());
 			dataBuilder.AddRange (lenInBytes);
 			dataBuilder.AddRange (System.Text.Encoding.UTF8.GetBytes (jsonContent));
 
@@ -465,12 +469,12 @@ namespace Mesharp
 			var mToken = messageToken.GetValueOrDefault();
 			if (mToken == Guid.Empty) mToken = Guid.NewGuid();
 			var req = new Request<Resp>(mToken);
-			RequestList.Add(mToken, req);
+//			RequestList.Add(mToken, req);
 			return req;
 		}
 
 		GenericsDictionary<Type> DelegateList = new GenericsDictionary<Type>();
-		GenericsDictionaryGuid RequestList = new GenericsDictionaryGuid();
+//		GenericsDictionaryGuid RequestList = new GenericsDictionaryGuid();
 
 		public MessageToHandle<T> AddHandler<T>(T messageObject) where T : class
 		{
@@ -495,13 +499,13 @@ namespace Mesharp
 
 			var messageType = messageObject.GetType ();
 
-			// In simple words: If a peer re-sent a message with the same messageToken,
-			// then it is considered as a response, and it invokes an action.
-			if (messageToken.GetValueOrDefault() != Guid.Empty && RequestList.ContainsItem (messageToken.GetValueOrDefault()))
-			{
-				var obj = RequestList.GetObject(messageToken.GetValueOrDefault());
-				var test = obj.GetType().GetRuntimeMethods();
-			}
+//			// In simple words: If a peer re-sent a message with the same messageToken,
+//			// then it is considered as a response, and it invokes an action.
+//			if (messageToken.GetValueOrDefault() != Guid.Empty && RequestList.ContainsItem (messageToken.GetValueOrDefault()))
+//			{
+//				var obj = RequestList.GetObject(messageToken.GetValueOrDefault());
+//				var test = obj.GetType().GetRuntimeMethods();
+//			}
 
 			if (DelegateList.ContainsItem (messageType))
 			{
@@ -519,7 +523,7 @@ namespace Mesharp
 					peerTokenProperty.SetValue (messageEventArgs, peerToken, null);
 
 					var messageTokenProperty = messageEventArgs.GetType ().GetRuntimeProperty ("MessageToken");
-					messageTokenProperty.SetValue (messageEventArgs, messageToken, null);
+					messageTokenProperty.SetValue (messageEventArgs, messageToken.GetValueOrDefault(), null);
 
 					onMessageEventMethod.Invoke (eventHandler, new object[1] { messageEventArgs });
 				}

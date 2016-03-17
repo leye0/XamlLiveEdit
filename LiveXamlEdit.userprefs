@@ -1,23 +1,25 @@
 ﻿<Properties StartupItem="Droid/LiveXamlEdit.Forms.Droid.csproj" RefactoringSettings.EnableRefactorings="True">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Android.TA240007SF" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Android.YT910HX7SE" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Mesharp/Client.cs">
     <Files>
-      <File FileName="LiveXamlEdit.cs" Line="75" Column="31" />
-      <File FileName="LiveXamlEdit.MessageService/Messaging.cs" Line="26" Column="64" />
-      <File FileName="Mesharp/Client.cs" Line="502" Column="1" />
-      <File FileName="Mesharp/Messages/ConnectWith.cs" Line="1" Column="1" />
-      <File FileName="Mesharp/Messages/BroadcastPeers.cs" Line="1" Column="1" />
-      <File FileName="Mesharp/MessageHandler.cs" Line="8" Column="19" />
-      <File FileName="Mesharp/Messages/UnhandledException.cs" Line="1" Column="1" />
-      <File FileName="Mesharp/Peer.cs" Line="1" Column="1" />
+      <File FileName="LiveXamlEdit.cs" Line="108" Column="4" />
+      <File FileName="Mesharp/Client.cs" Line="512" Column="5" />
+      <File FileName="Mesharp/MessageHandler.cs" Line="53" Column="1" />
+      <File FileName="Mesharp/Messages/BroadcastPeers.cs" Line="10" Column="1" />
     </Files>
+    <Pads>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State>
+          <Value>e.InnerException</Value>
+        </State>
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="/Projects/XamlLiveEdit/Mesharp/Client.cs" line="502" column="1" />
-      <Breakpoint file="/Projects/XamlLiveEdit/Mesharp/Client.cs" line="293" column="1" />
-      <Breakpoint file="/Projects/XamlLiveEdit/Mesharp/Client.cs" line="299" column="1" />
-      <Breakpoint file="/Projects/XamlLiveEdit/LiveXamlEdit.cs" line="77" column="1" />
+      <Breakpoint file="/Projects/XamlLiveEdit/Mesharp/Client.cs" line="527" column="1" />
+      <Breakpoint file="/Projects/XamlLiveEdit/Mesharp/Client.cs" line="528" column="1" />
+      <Breakpoint file="/Projects/XamlLiveEdit/Mesharp/MessageHandler.cs" line="53" column="17" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />

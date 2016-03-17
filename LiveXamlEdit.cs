@@ -12,27 +12,48 @@ namespace LiveXamlEdit.Forms
 {
 	public class App : Application
 	{
-		Label _listOfIps;
-
 		Messaging.Messaging _messaging;
 		ContentPage _page;
 
 		public App ()
 		{
 			var ipAddress = DependencyService.Get<IIPAddressManager> ().GetIPAddress ();
-			 
-			// The root page of your application
-			var mePort = new Entry () { Text = "11111" };
-			var textEdit = new Entry () { Text = "192.168." };
-			var textEdit2 = new Entry () { Text = "11111" };
-			_listOfIps = new Label {
-				XAlign = TextAlignment.Center,
-				Text = "",
-				BackgroundColor = Color.Navy
-			};
-			var meButton = new Button () { Text = "Connect Me (choose port)" };
-			var otherButton = new Button () { Text = "Connect Other" };
-			var anotherButton = new Button () { Text = "Send a message to first peer" };
+
+			var mePort = new Entry () { Text = "11111", HorizontalOptions = LayoutOptions.Fill };
+			var meButton = new Button () { Text = "Connect Me (choose port)", HorizontalOptions = LayoutOptions.Fill };
+
+			var otherIp = new Entry () { Text = "192.168.12.", HorizontalOptions = LayoutOptions.Fill };
+			var otherPort = new Entry () { Text = "11111", HorizontalOptions = LayoutOptions.Fill };
+			var otherConnect = new Button () { Text = "Connect Other", HorizontalOptions = LayoutOptions.Fill };
+
+			var sendMessageToFirst = new Button () { Text = "Send a message to first peer" };
+
+			var logClear = new Button() { Text = "Clear" };
+			var logScroll = new ScrollView { Orientation = ScrollOrientation.Vertical, VerticalOptions = LayoutOptions.FillAndExpand };
+			var logView = new Label()
+			{ 	
+				Text = "TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT TTTTT ",
+				HorizontalOptions = LayoutOptions.FillAndExpand,
+				VerticalOptions = LayoutOptions.StartAndExpand,
+				HeightRequest = 1000,
+				LineBreakMode = LineBreakMode.CharacterWrap,
+				FontSize = 8
+		  	};
+
+		  	logScroll.Content = logView;
+
+			var stack1 = new StackLayout{Orientation = StackOrientation.Horizontal};
+			stack1.Children.Add(mePort);
+			stack1.Children.Add(meButton);
+
+			var stack2 = new StackLayout{Orientation = StackOrientation.Horizontal};
+			stack2.Children.Add(otherIp);
+			stack2.Children.Add(otherPort);
+			stack2.Children.Add(otherConnect);
+
+			var stack3 = new StackLayout{Orientation = StackOrientation.Horizontal};
+			stack3.Children.Add(sendMessageToFirst);
+			stack3.Children.Add(logClear);
 
 			MainPage = _page = new ContentPage {
 				Content = new StackLayout {
@@ -42,13 +63,10 @@ namespace LiveXamlEdit.Forms
 							XAlign = TextAlignment.Center,
 							Text = ipAddress
 						},
-						_listOfIps,
-						mePort,
-						meButton,
-						otherButton,
-						textEdit,
-						textEdit2,
-						anotherButton
+						stack1,
+						stack2,
+						stack3,
+						logScroll
 					}
 				}
 			};
@@ -58,24 +76,34 @@ namespace LiveXamlEdit.Forms
 			meButton.Clicked += (object sender, EventArgs e) => {
 				_messaging = new Messaging.Messaging (ipAddress, int.Parse (mePort.Text), Device.OS.ToString (), "MobileTest");
 				meButton.IsEnabled = false;
+				_messaging.LogReceived += (MessageEventArgs<Log> obj) => 
+				{
+					Xamarin.Forms.Device.BeginInvokeOnMainThread (() => {
+						logView.Text += obj.Message.Text;
+					});
+				};
 			};
 
-
-			otherButton.Clicked += (s, e) => {
-				var ip = textEdit.Text;
-				var port = int.Parse (textEdit2.Text);
+			otherConnect.Clicked += (s, e) => {
+				var ip = otherIp.Text;
+				var port = int.Parse (otherPort.Text);
 				_messaging.Client.ConnectWith (new ClientInfos {
 					IPAddress = ip,
 					Port = port
 				});
 			};
 
-			anotherButton.Clicked += (s, e) => {
+			sendMessageToFirst.Clicked += (s, e) => {
 				_messaging.Client.Send<Ping, Pong> (new Ping (Guid.NewGuid()), _messaging.Client.Peers.FirstOrDefault ().ClientInfos.PeerToken, Guid.NewGuid())
 				.Response += (Pong obj) =>
 				{
 					var ab = 1;
 				};
+			};
+
+			logClear.Clicked += (object sender, EventArgs e) => 
+			{
+				logView.Text = "";
 			};
 		}
 
