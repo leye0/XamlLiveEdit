@@ -1,6 +1,5 @@
 ﻿using Mesharp;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace LiveXamlEdit.Messaging
@@ -15,34 +14,24 @@ namespace LiveXamlEdit.Messaging
 		public Messaging (string ipAddress, int port, string platform, string friendlyName)
 		{
 			Client = Client.Create(ipAddress, port, platform, friendlyName);
-			Client.AddHandler(new ConnectWith()).Received += OnConnectWith;
-			Client.AddHandler(new ReturnPeer()).Received += OnReturnPeer;
-			Client.AddHandler(new Log()).Received += OnLog;
-			Client.AddHandler(new BadRequest()).Received += OnBadRequest;
-			Client.AddHandler(new Chocolat()).Received += OnChocolat;;
+			Client.AddHandler(new ConnectWith()).EventHandler += OnConnectWith;
+			Client.AddHandler(new ReturnPeer()).EventHandler += OnReturnPeer;
 
-		}
-
-		void OnChocolat (MessageToHandle<Chocolat> sender, MessageEventArgs<Chocolat> e)
-		{
-			
-		}
-
-		void OnBadRequest (MessageToHandle<BadRequest> sender, MessageEventArgs<BadRequest> e)
-		{
-		}
-
-		void OnLog (MessageToHandle<Log> sender, MessageEventArgs<Log> e)
-		{
 		}
 
 		void OnReturnPeer (MessageToHandle<ReturnPeer> sender, MessageEventArgs<ReturnPeer> e)
 		{
+			
 		}
 
-		void OnConnectWith (MessageToHandle<ConnectWith> sender, MessageEventArgs<ConnectWith> e)
+		void OnConnectWith (MessageToHandle<Mesharp.ConnectWith> sender, MessageEventArgs<Mesharp.ConnectWith> e)
 		{
 		}
 
+		public async Task ConnectWith (ClientInfos destinationClientInfos)
+		{
+			var originClientInfo = Client.ClientInfos;
+			await Client.Send(new ConnectWith(originClientInfo, Client.Peers.ToArray()), Guid.NewGuid(), destinationClientInfos);
+		}
 	}
 }

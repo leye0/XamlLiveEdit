@@ -1,24 +1,16 @@
-﻿<Properties StartupItem="Droid/LiveXamlEdit.Forms.Droid.csproj" RefactoringSettings.EnableRefactorings="True">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Android.TA240007SF" />
+﻿<Properties StartupItem="iOS/LiveXamlEdit.Forms.iOS.csproj" RefactoringSettings.EnableRefactorings="True">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneSimulatorTarget.IPhone6.9.0" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Mesharp/Client.cs">
     <Files>
-      <File FileName="LiveXamlEdit.cs" Line="75" Column="31" />
-      <File FileName="LiveXamlEdit.MessageService/Messaging.cs" Line="26" Column="64" />
-      <File FileName="Mesharp/Client.cs" Line="502" Column="1" />
+      <File FileName="LiveXamlEdit.cs" Line="1" Column="1" />
+      <File FileName="LiveXamlEdit.MessageService/Messaging.cs" Line="1" Column="1" />
+      <File FileName="Mesharp/Client.cs" Line="101" Column="7" />
       <File FileName="Mesharp/Messages/ConnectWith.cs" Line="1" Column="1" />
       <File FileName="Mesharp/Messages/BroadcastPeers.cs" Line="1" Column="1" />
-      <File FileName="Mesharp/MessageHandler.cs" Line="8" Column="19" />
-      <File FileName="Mesharp/Messages/UnhandledException.cs" Line="1" Column="1" />
-      <File FileName="Mesharp/Peer.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore>
-      <Breakpoint file="/Projects/XamlLiveEdit/Mesharp/Client.cs" line="502" column="1" />
-      <Breakpoint file="/Projects/XamlLiveEdit/Mesharp/Client.cs" line="293" column="1" />
-      <Breakpoint file="/Projects/XamlLiveEdit/Mesharp/Client.cs" line="299" column="1" />
-      <Breakpoint file="/Projects/XamlLiveEdit/LiveXamlEdit.cs" line="77" column="1" />
-    </BreakpointStore>
+    <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <DisabledProjects>

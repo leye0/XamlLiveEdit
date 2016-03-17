@@ -33,6 +33,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="Messages\ConnectWith.cs" />
+    <Compile Include="Contents\ClientInfos.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\ReturnPeer.cs" />
     <Compile Include="Peer.cs" />
@@ -43,9 +44,6 @@
     <Compile Include="Messages\Pong.cs" />
     <Compile Include="Messages\Log.cs" />
     <Compile Include="Messages\BroadcastPeers.cs" />
-    <Compile Include="Messages\BadRequestReport.cs" />
-    <Compile Include="Messages\UnhandledException.cs" />
-    <Compile Include="ClientInfos.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>
@@ -64,5 +62,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Messages\" />
+    <Folder Include="Contents\" />
   </ItemGroup>
 </Project>

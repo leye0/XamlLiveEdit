@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace Mesharp
 {
-	public class GenericsDictionary<KeyType> where KeyType : class
+	public class RegistrationDictionary
 	{
-		private Dictionary<KeyType, object> _dict = new Dictionary<KeyType, object>();
+		private Dictionary<Type, object> _dict = new Dictionary<Type, object>();
 
-		public void Add<T> (KeyType key, T value) where T : class
+		public void Add<T> (Type key, T value) where T : class
 		{
 			if (!_dict.ContainsKey (key))
 			{
@@ -17,95 +17,17 @@ namespace Mesharp
 	        (_dict[key] as List<T>).Add(value);
 	    }
 
-		public GenericsDictionary<KeyType> AddAndReturn<T> (KeyType key, T value) where T : class
-		{
-			if (!_dict.ContainsKey (key))
-			{
-				_dict.Add(key, new List<T>());
-			}
-
-	        (_dict[key] as List<T>).Add(value);
-
-	        return this;
-	    }
-
-		public T AddAndGet<T> (KeyType key, T value) where T : class, new()
-		{
-			if (!_dict.ContainsKey (key))
-			{
-				_dict.Add(key, new List<T>());
-			}
-
-	        (_dict[key] as List<T>).Add(value);
-
-	        return value;
-	    }
-
-		public bool ContainsItem(KeyType key)
+		public bool ContainsRegistration(Type key)
 	    {
 	        return _dict.ContainsKey(key);
 	    }
 
-		public List<T> GetValue<T>(KeyType key) where T : class
+		public List<T> GetValue<T>(Type key) where T : class
 	    {
 			return _dict[key] as List<T>;
 	    }
 
-		public object GetObject(KeyType key)
-	    {
-			return _dict[key];
-	    }
-	}
-
-	public class GenericsDictionaryGuid
-	{
-		private Dictionary<Guid, object> _dict = new Dictionary<Guid, object>();
-
-		public void Add<T> (Guid key, T value) where T : class
-		{
-			if (!_dict.ContainsKey (key))
-			{
-				_dict.Add(key, new List<T>());
-			}
-
-	        (_dict[key] as List<T>).Add(value);
-	    }
-
-		public GenericsDictionaryGuid AddAndReturn<T> (Guid key, T value) where T : class
-		{
-			if (!_dict.ContainsKey (key))
-			{
-				_dict.Add(key, new List<T>());
-			}
-
-	        (_dict[key] as List<T>).Add(value);
-
-	        return this;
-	    }
-
-		public T AddAndGet<T> (Guid key, T value) where T : class, new()
-		{
-			if (!_dict.ContainsKey (key))
-			{
-				_dict.Add(key, new List<T>());
-			}
-
-	        (_dict[key] as List<T>).Add(value);
-
-	        return value;
-	    }
-
-		public bool ContainsItem(Guid key)
-	    {
-	        return _dict.ContainsKey(key);
-	    }
-
-		public List<T> GetValue<T>(Guid key) where T : class
-	    {
-			return _dict[key] as List<T>;
-	    }
-
-		public object GetObject(Guid key)
+		public object GetObject(Type key)
 	    {
 			return _dict[key];
 	    }

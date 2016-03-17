@@ -5,8 +5,6 @@ using LiveXamlEdit.Common;
 using Mesharp;
 using Xamarin.Forms;
 using System.Threading.Tasks;
-using File = LiveXamlEdit.Messaging.File;
-using System.Collections.Generic;
 
 namespace LiveXamlEdit.Forms
 {
@@ -19,20 +17,19 @@ namespace LiveXamlEdit.Forms
 
 		public App ()
 		{
-			var ipAddress = DependencyService.Get<IIPAddressManager> ().GetIPAddress ();
+			var ipAddress = DependencyService.Get<IIPAddressManager>().GetIPAddress();
 			 
 			// The root page of your application
-			var mePort = new Entry () { Text = "11111" };
-			var textEdit = new Entry () { Text = "192.168." };
-			var textEdit2 = new Entry () { Text = "11111" };
+			var mePort = new Entry() { Text = "11111" };
+			var textEdit = new Entry() {Text="192.168."};
+			var textEdit2 = new Entry() { Text="11111" };
 			_listOfIps = new Label {
-				XAlign = TextAlignment.Center,
-				Text = "",
-				BackgroundColor = Color.Navy
-			};
-			var meButton = new Button () { Text = "Connect Me (choose port)" };
-			var otherButton = new Button () { Text = "Connect Other" };
-			var anotherButton = new Button () { Text = "Send a message to first peer" };
+							XAlign = TextAlignment.Center,
+							Text = "",
+							BackgroundColor = Color.Navy
+						};
+			var meButton = new Button() { Text = "Connect Me (choose port)"};
+			var otherButton = new Button() { Text = "Connect Other"};
 
 			MainPage = _page = new ContentPage {
 				Content = new StackLayout {
@@ -47,36 +44,62 @@ namespace LiveXamlEdit.Forms
 						meButton,
 						otherButton,
 						textEdit,
-						textEdit2,
-						anotherButton
+						textEdit2
 					}
 				}
 			};
 
+
 			_messaging = null;
 
-			meButton.Clicked += (object sender, EventArgs e) => {
-				_messaging = new Messaging.Messaging (ipAddress, int.Parse (mePort.Text), Device.OS.ToString (), "MobileTest");
+			meButton.Clicked += (object sender, EventArgs e) => 
+			{
+				_messaging = new Messaging.Messaging(ipAddress, int.Parse(mePort.Text), Device.OS.ToString(), "MobileTest");
+				_messaging.Client.AddHandler(new ConnectWith()).EventHandler += OnConnectWith;
+				_messaging.Client.AddHandler(new ReturnPeer()).EventHandler += OnReturnPeer;
+				_messaging.Client.AddHandler(new Log()).EventHandler += OnLog;
 				meButton.IsEnabled = false;
 			};
 
 
-			otherButton.Clicked += (s, e) => {
+			otherButton.Clicked += (s,e) =>
+			{
 				var ip = textEdit.Text;
-				var port = int.Parse (textEdit2.Text);
-				_messaging.Client.ConnectWith (new ClientInfos {
+				var port = int.Parse(textEdit2.Text);
+				_messaging.ConnectWith(new ClientInfos
+				{
 					IPAddress = ip,
 					Port = port
 				});
 			};
+		}
 
-			anotherButton.Clicked += (s, e) => {
-				_messaging.Client.Send<Ping, Pong> (new Ping (Guid.NewGuid()), _messaging.Client.Peers.FirstOrDefault ().ClientInfos.PeerToken, Guid.NewGuid())
-				.Response += (Pong obj) =>
+		void OnLog (MessageToHandle<Log> sender, MessageEventArgs<Log> e)
+		{
+			Xamarin.Forms.Device.BeginInvokeOnMainThread(async () => 
+			{
+				_page.DisplayAlert ("Log", e.Message.Text, "Ok");
+				var peers = "";
+				foreach (var p in _messaging.Client.Peers)
 				{
-					var ab = 1;
-				};
-			};
+					peers+=p.ClientInfos.IPAddress+";";
+				}
+				_listOfIps.Text = peers;
+			});
+
+
+		}
+
+		void OnReturnPeer (MessageToHandle<ReturnPeer> sender, MessageEventArgs<ReturnPeer> e)
+		{
+//			_listOfIps.Text += e.Message.ReturnedPeer.ClientInfos.IPAddress + " returned! ";
+//			Xamarin.Forms.Device.BeginInvokeOnMainThread(async () => { _page.DisplayAlert("Return peer", e.Message.ReturnedPeer.ClientInfos.IPAddress, "Ok"); });
+		}
+
+		void OnConnectWith (MessageToHandle<ConnectWith> sender, MessageEventArgs<ConnectWith> e)
+		{
+//			_listOfIps.Text += e.Message.ClientInfos.IPAddress + " connected! ";
+//			Xamarin.Forms.Device.BeginInvokeOnMainThread(async () => { _page.DisplayAlert("Connected", e.Message.ClientInfos.IPAddress, "Ok"); });
 		}
 
 		protected override void OnStart () {}
