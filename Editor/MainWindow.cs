@@ -31,7 +31,7 @@ public partial class MainWindow: Gtk.Window
 		textview2.Editable = true;
 		textview2.Buffer.Changed += (o, args) => 
 		{
-			if (!string.IsNullOrWhiteSpace(textview2.Buffer.Text))
+			if (textview2.Buffer != null && !string.IsNullOrWhiteSpace(textview2.Buffer.Text))
 			{
 				RefreshXaml(textview2.Buffer.Text);
 			}
@@ -66,6 +66,10 @@ public partial class MainWindow: Gtk.Window
 		_messaging = new Messaging(ipAddress, 11006, "Desktop", "DesktopTest");
 		_messaging.Client.AddHandler(new XamlError()).Received += XamlError;
 		_messaging.Client.AddHandler(new ConnectWith()).Received += OnConnect;
+		_messaging.Client.ConnectWith(new ClientInfos {
+			IPAddress = "192.168.2.13",
+			Port = 11111
+		});
 	}
 
 	void OnConnect (Mesharp.MessageToHandle<ConnectWith> sender, Mesharp.MessageEventArgs<ConnectWith> e)

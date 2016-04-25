@@ -7,6 +7,12 @@ using Xamarin.Forms;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using LiveXamlEdit.Messaging;
+using System.Net;
+using System.IO;
+using System.Text;
+using System.Net.Http;
+using PCLStorage;
+using System.Xml.Linq;
 
 namespace LiveXamlEdit.Forms
 {
@@ -41,23 +47,34 @@ namespace LiveXamlEdit.Forms
 			};
 
 			_messaging.Client.AddHandler(new Xaml()).Received += OnXamlReceived;
-			_messaging.Client.ConnectWith(new ClientInfos
-			{
-				IPAddress = "192.168.12.165",
-				Port = 11006
-			});
+//			_messaging.Client.ConnectWith(new ClientInfos
+//			{
+//				IPAddress = "192.168.12.165",
+//				Port = 11111
+//			});
+
+
+			LoadAssemblyPOC();
+		}
+
+		// Downloads a .dll and loads types.
+		// It seems like this security issue in XS has been resolved Q1 2016. :(
+		private async Task LoadAssemblyPOC ()
+		{
+			var client = new HttpClient ();
+			var assembly = await client.GetAsync ("https://drive.google.com/uc?export=download&id=0B2CLiIAK3uPmdUZxXzlXUm5WMm8");
+			var assemblyBytes = await assembly.Content.ReadAsByteArrayAsync ();
+			var fs = PCLStorage.FileSystem.Current;
+			var fold = await fs.GetFolderFromPathAsync ("/data/data/com.livexamledit/files/.__override__"); // cache files/.__config__
+			var file = await fold.CreateFileAsync("DummyPresentation.DummyViewModels.dll", CreationCollisionOption.ReplaceExisting);
+			file.WriteAllBytes(assemblyBytes);
+			var test = await fold.GetFilesAsync();
+			OuterAssembly = Assembly.Load(new AssemblyName("DummyPresentation.DummyViewModels.dll"));
 		}
 
 		void OnXamlReceived (MessageToHandle<Xaml> sender, MessageEventArgs<Xaml> e)
 		{
-			try
-			{
-				ShowPage(e.Message.XamlContent);
-			} 
-			catch (Exception exception)
-			{
-				_messaging.Client.Send(new XamlError(exception), e.PeerToken, null);
-			}
+			ShowPage (e.Message.XamlContent, e.PeerToken);
 		}
 
 		void InitPlaygroundUi()
@@ -148,32 +165,47 @@ namespace LiveXamlEdit.Forms
 		protected override void OnSleep () {}
 		protected override void OnResume () {}
 
-		private void ShowPage (string xamlContents)
+		public Assembly OuterAssembly { get; set; } 
+
+		// Wrong peer token (dest), need src.
+		private async void ShowPage (string xamlContents, Guid peerToken)
 		{
+
+			// Check content before
+			try
+			{
+				var xmlDoc = XDocument.Parse (xamlContents);
+
+			} catch (Exception e)
+			{
+				_messaging.Client.Send (new XamlError (e), peerToken, null);
+			}
+
 			try
 			{
 				var page = new ContentPage{ Padding = new Thickness (0, 0, 0, 0) };
 
+
 				var s = (
-				            ((MethodInfo)(
-				                ((TypeInfo)(
-				                    (
-				                        typeof(Xamarin.Forms.Xaml.ArrayExtension).GetTypeInfo ().Assembly.DefinedTypes
-				.Where (t => t.FullName == "Xamarin.Forms.Xaml.Extensions")
-				.First ()
-				                    )
-				                )).DeclaredMembers
-				.Where (t => !((MethodInfo)t).Attributes.HasFlag (System.Reflection.MethodAttributes.Family))
-				.First ()
-				            )).MakeGenericMethod (typeof(ContentPage))
-				        ).Invoke (null, new object[]{ page, xamlContents }) != null;
+				           ((MethodInfo)(
+				               ((TypeInfo)(
+				                   (
+				                       typeof(Xamarin.Forms.Xaml.ArrayExtension).GetTypeInfo ().Assembly.DefinedTypes
+										.Where (t => t.FullName == "Xamarin.Forms.Xaml.Extensions")
+										.First ()
+											                   )
+											               )).DeclaredMembers
+										.Where (t => !((MethodInfo)t).Attributes.HasFlag (System.Reflection.MethodAttributes.Family))
+										.First ()
+				           )).MakeGenericMethod (typeof(ContentPage))
+				       ).Invoke (null, new object[]{ page, xamlContents }) != null;
 
 				Xamarin.Forms.Device.BeginInvokeOnMainThread (() => {
 					MainPage = page;
 				});
 			} catch (Exception e)
 			{
-				System.Diagnostics.Debug.WriteLine (e.Message);
+				_messaging.Client.Send (new XamlError (e), peerToken, null);
 			}
 		}
 	}

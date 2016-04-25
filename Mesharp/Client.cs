@@ -476,13 +476,11 @@ namespace Mesharp
 
 			var mToken = messageToken.GetValueOrDefault();
 			if (mToken == Guid.Empty) mToken = Guid.NewGuid();
-			var req = new Request<Resp>(mToken);
-//			RequestList.Add(mToken, req);
-			return req;
+
+			return new Request<Resp>(mToken);
 		}
 
 		GenericsDictionary<Type> DelegateList = new GenericsDictionary<Type>();
-//		GenericsDictionaryGuid RequestList = new GenericsDictionaryGuid();
 
 		public MessageToHandle<T> AddHandler<T>(T messageObject) where T : class
 		{

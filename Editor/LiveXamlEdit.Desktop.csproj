@@ -84,6 +84,7 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="SampleXaml.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Mesharp\Mesharp.csproj">

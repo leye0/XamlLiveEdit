@@ -1,14 +1,19 @@
-﻿<Properties StartupItem="Droid/LiveXamlEdit.Forms.Droid.csproj" RefactoringSettings.EnableRefactorings="True">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Android.TA240007SF" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="LiveXamlEdit.cs">
+﻿<Properties StartupItem="Editor/LiveXamlEdit.Desktop.csproj" RefactoringSettings.EnableRefactorings="True">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Editor/SampleXaml.xaml">
     <Files>
-      <File FileName="LiveXamlEdit.cs" Line="115" Column="4" />
-      <File FileName="Mesharp/Client.cs" Line="402" Column="30" />
+      <File FileName="Mesharp/Client.cs" Line="1" Column="1" />
+      <File FileName="Editor/MainWindow.cs" Line="82" Column="3" />
+      <File FileName="Editor/Program.cs" Line="14" Column="1" />
+      <File FileName="Editor/SampleXaml.xaml" Line="84" Column="15" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="/Projects/XamlLiveEdit/Editor/MainWindow.cs" line="64" column="29" />
+      <Breakpoint file="/Projects/XamlLiveEdit/Editor/MainWindow.cs" line="153" column="29" />
+      <Breakpoint file="/Projects/XamlLiveEdit/Editor/MainWindow.cs" line="78" column="1" />
+      <Breakpoint file="/Projects/XamlLiveEdit/Editor/MainWindow.cs" line="83" column="1" />
+      <Breakpoint file="/Projects/XamlLiveEdit/Editor/MainWindow.cs" line="55" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
