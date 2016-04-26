@@ -64,20 +64,16 @@ public partial class MainWindow: Gtk.Window
 	private async Task InitClient ()
 	{
 		var ipAddress = new IPAddressManager().GetIPAddress();
-		_messaging = new Messaging(ipAddress, 11006, "Desktop", "DesktopTest");
+		_messaging = new Messaging(ipAddress, 11112, "Desktop", "DesktopTest");
 		_messaging.Client.AddHandler(new XamlError()).Received += XamlError;
 
 		//_messaging.Client.AddHandler(new ConnectWith()).Received += OnConnect;
 
-		var content = (await _messaging.Client.Send<ConnectWith, ReturnPeer>(new ConnectWith(_messaging.Client.ClientInfos, _messaging.Client.Peers.ToArray()), Guid.NewGuid(), new ClientInfos {
-			IPAddress = "192.168.2.13",
-			Port = 11111
-		})).ResponseContent;
-
-//		_messaging.Client.ConnectWith(new ClientInfos {
-//			IPAddress = "192.168.2.13",
-//			Port = 11111
-//		});
+//		var content = (await _messaging.Client.Send<ConnectWith, ReturnPeer>(new ConnectWith(_messaging.Client.ClientInfos, _messaging.Client.Peers.ToArray()), Guid.NewGuid(), new ClientInfos {
+//			IPAddress = "192.168.12.227",
+//			Port = 11112
+//		})).ResponseContent;
+//
 	}
 
 	void OnConnect (Mesharp.MessageToHandle<ConnectWith> sender, Mesharp.MessageEventArgs<ConnectWith> e)

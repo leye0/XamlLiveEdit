@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadAssembliesName", "ReadAssembliesName.csproj", "{9E89954F-DF86-4968-8A4A-736E954AA7A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mesharp", "..\XamlLiveEdit\Mesharp\Mesharp.csproj", "{DC6B5E9C-4B3A-49D6-802F-215AC59AE8DC}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LiveXamlEdit.Common", "..\XamlLiveEdit\LiveXamlEdit.Common\LiveXamlEdit.Common.shproj", "{CF44D2F0-5208-4F24-8042-A5ACB56808D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveXamlEdit.Messaging", "..\XamlLiveEdit\LiveXamlEdit.MessageService\LiveXamlEdit.Messaging.csproj", "{6798ED4F-B72D-43D8-8D32-11FDE19B6126}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6798ED4F-B72D-43D8-8D32-11FDE19B6126}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6798ED4F-B72D-43D8-8D32-11FDE19B6126}.Debug|x86.Build.0 = Debug|Any CPU
+		{6798ED4F-B72D-43D8-8D32-11FDE19B6126}.Release|x86.ActiveCfg = Release|Any CPU
+		{6798ED4F-B72D-43D8-8D32-11FDE19B6126}.Release|x86.Build.0 = Release|Any CPU
+		{9E89954F-DF86-4968-8A4A-736E954AA7A8}.Debug|x86.ActiveCfg = Debug|x86
+		{9E89954F-DF86-4968-8A4A-736E954AA7A8}.Debug|x86.Build.0 = Debug|x86
+		{9E89954F-DF86-4968-8A4A-736E954AA7A8}.Release|x86.ActiveCfg = Release|x86
+		{9E89954F-DF86-4968-8A4A-736E954AA7A8}.Release|x86.Build.0 = Release|x86
+		{DC6B5E9C-4B3A-49D6-802F-215AC59AE8DC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DC6B5E9C-4B3A-49D6-802F-215AC59AE8DC}.Debug|x86.Build.0 = Debug|Any CPU
+		{DC6B5E9C-4B3A-49D6-802F-215AC59AE8DC}.Release|x86.ActiveCfg = Release|Any CPU
+		{DC6B5E9C-4B3A-49D6-802F-215AC59AE8DC}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

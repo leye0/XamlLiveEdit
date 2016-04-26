@@ -8,6 +8,7 @@ using Sockets.Plugin.Abstractions;
 using System.Collections;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Threading;
 
 namespace Mesharp
 {
@@ -36,7 +37,7 @@ namespace Mesharp
 		{
 			ApplicationContext = applicationContext;
 
-			Timeout = TimeSpan.FromSeconds(5);
+			Timeout = TimeSpan.FromSeconds(10);
 
 			ClientInfos = new ClientInfos()
 			{
@@ -305,6 +306,8 @@ namespace Mesharp
 			await listener.StartListeningAsync (listenPort);
 		}
 
+		public static ManualResetEvent allDone = new ManualResetEvent(false);
+
 		// TODO: Older clientInfos could override newer clientInfos. Priority should be based on a date
 		void OnBroadcastPeers (MessageToHandle<BroadcastPeers> sender, MessageEventArgs<BroadcastPeers> e)
 		{
@@ -329,6 +332,22 @@ namespace Mesharp
 			knownTypes.AddRange(mesharpDefinedTypes);
 			var typeInfo = knownTypes.FirstOrDefault(x => x.FullName == typeFullName);
 			return typeInfo != null ? typeInfo.AsType() : null;
+		}
+
+		// TODO: The logic is strange for the connection, but I want to be consistent with the API
+		public async Task<ReturnPeer> Connect (string ip, int port)
+		{
+			var clientInfos = new ClientInfos {
+					IPAddress = ip,
+					Port = port
+				};
+
+			var response = await Send<ConnectWith, ReturnPeer> (new ConnectWith () { 
+				ClientInfos = clientInfos,
+				SharedPeers = Peers.ToArray()
+			}, Guid.NewGuid(), clientInfos);
+
+			return response.ResponseContent;
 		}
 
 		void OnConnectWith (MessageToHandle<ConnectWith> sender, MessageEventArgs<ConnectWith> e)
@@ -515,6 +534,7 @@ namespace Mesharp
 					{
 						var resp = ResponseList [mToken] as Resp;
 						ResponseList.Remove (mToken);
+
 						return new Response<Resp> (resp);
 					}
 
@@ -556,14 +576,6 @@ namespace Mesharp
 			}
 
 			var messageType = messageObject.GetType ();
-
-//			// In simple words: If a peer re-sent a message with the same messageToken,
-//			// then it is considered as a response, and it invokes an action.
-//			if (messageToken.GetValueOrDefault() != Guid.Empty && RequestList.ContainsItem (messageToken.GetValueOrDefault()))
-//			{
-//				var obj = RequestList.GetObject(messageToken.GetValueOrDefault());
-//				var test = obj.GetType().GetRuntimeMethods();
-//			}
 
 			var responses = new List<MessageResponse> ();
 

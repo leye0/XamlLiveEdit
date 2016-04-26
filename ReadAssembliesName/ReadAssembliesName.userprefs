@@ -1,0 +1,23 @@
+﻿<Properties StartupItem="ReadAssembliesName.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="../XamlLiveEdit/Mesharp/Client.cs">
+    <Files>
+      <File FileName="../XamlLiveEdit/Mesharp/Client.cs" Line="364" Column="25" />
+    </Files>
+    <Pads>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State>
+          <Value>assembly.CustomAttributes[5]</Value>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="/Projects/XamlLiveEdit/Mesharp/Client.cs" line="355" column="1" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches>
+    <Watch file="Program.cs" line="74" offsetX="661" offsetY="1115" expression="name" liveUpdate="False" />
+  </MonoDevelop.Ide.DebuggingService.PinnedWatches>
+</Properties>

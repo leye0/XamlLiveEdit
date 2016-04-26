@@ -35,6 +35,7 @@
     <Compile Include="PCLStorageOtherExtensions.cs" />
     <Compile Include="Messages\Xaml.cs" />
     <Compile Include="Messages\XamlError.cs" />
+    <Compile Include="Messages\AssemblyFile.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

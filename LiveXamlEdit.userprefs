@@ -1,4 +1,4 @@
-﻿<Properties StartupItem="Droid/LiveXamlEdit.Forms.Droid.csproj" RefactoringSettings.EnableRefactorings="True">
+﻿<Properties StartupItem="Editor/LiveXamlEdit.Desktop.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Android.YT910HX7SE" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Editor/MainWindow.cs">
     <Files>

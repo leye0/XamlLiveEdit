@@ -29,10 +29,10 @@ namespace LiveXamlEdit.Forms
 		}
 
 		string ip;
-		void InitRenderingTestUi ()
+		async Task InitRenderingTestUi ()
 		{
 			ip = DependencyService.Get<IIPAddressManager> ().GetIPAddress ();
-			_messaging = new Messaging.Messaging (ip, 11111, Device.OS.ToString (), "MobileTest");
+			_messaging = new Messaging.Messaging (ip, 11112, Device.OS.ToString (), "MobileTest");
 
 			MainPage = _page = new ContentPage {
 				Content = new StackLayout {
@@ -46,30 +46,28 @@ namespace LiveXamlEdit.Forms
 				}
 			};
 
-			_messaging.Client.AddHandler(new Xaml()).Received += OnXamlReceived;
-//			_messaging.Client.ConnectWith(new ClientInfos
-//			{
-//				IPAddress = "192.168.12.165",
-//				Port = 11111
-//			});
+			_messaging.Client.AddHandler (new Xaml ()).Received += OnXamlReceived;
+			_messaging.Client.AddHandler (new AssemblyFile ()).Received += OnAssemblyReceived;
 
-
-			LoadAssemblyPOC();
+			// DEBUG - Connect directly with server
+			var r = await _messaging.Client.Connect("192.168.12.181", 11112);
 		}
 
-		// Downloads a .dll and loads types.
-		// It seems like this security issue in XS has been resolved Q1 2016. :(
-		private async Task LoadAssemblyPOC ()
+		private void OnAssemblyReceived (MessageToHandle<AssemblyFile> sender, MessageEventArgs<AssemblyFile> e)
 		{
-			var client = new HttpClient ();
-			var assembly = await client.GetAsync ("https://drive.google.com/uc?export=download&id=0B2CLiIAK3uPmdUZxXzlXUm5WMm8");
-			var assemblyBytes = await assembly.Content.ReadAsByteArrayAsync ();
-			var fs = PCLStorage.FileSystem.Current;
-			var fold = await fs.GetFolderFromPathAsync ("/data/data/com.livexamledit/files/.__override__"); // cache files/.__config__
-			var file = await fold.CreateFileAsync("DummyPresentation.DummyViewModels.dll", CreationCollisionOption.ReplaceExisting);
-			file.WriteAllBytes(assemblyBytes);
-			var test = await fold.GetFilesAsync();
-			OuterAssembly = Assembly.Load(new AssemblyName("DummyPresentation.DummyViewModels.dll"));
+			Task.Run(async () => 
+			{
+				var assemblyBytes = e.Message.Data;
+				var name = e.Message.Name + ".dll";
+
+
+				var fs = PCLStorage.FileSystem.Current;
+				var fold = await fs.GetFolderFromPathAsync ("/data/data/com.livexamledit/files/.__override__");
+				var file = await fold.CreateFileAsync(name, CreationCollisionOption.ReplaceExisting);
+				file.WriteAllBytes(assemblyBytes);
+
+				Assembly.Load(new AssemblyName("DummyPresentation.DummyViewModels.dll"));	
+			});
 		}
 
 		void OnXamlReceived (MessageToHandle<Xaml> sender, MessageEventArgs<Xaml> e)
