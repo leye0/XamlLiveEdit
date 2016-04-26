@@ -5,8 +5,22 @@ namespace Mesharp
 	public class MessageEventArgs<T> : EventArgs
 	{ 
 		public T Message { get; set; }
+		public MessageResponse Response { get; set; }
 		public Guid PeerToken { get; set; }
 		public Guid MessageToken { get; set; }
+	}
+
+	public class MessageResponse
+	{
+		public MessageResponse(object message, bool isBroadcast)
+		{
+			Message = message;
+			IsBroadcast = isBroadcast;
+		}
+
+		public object Message { get; set; }
+
+		public bool IsBroadcast { get; set; }
 	}
 
 	public class BadRequest : EventArgs

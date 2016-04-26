@@ -15,6 +15,8 @@ namespace Mesharp
 	{
 		private object ApplicationContext;
 
+		public TimeSpan Timeout { get; set; }
+
 		public static Client Create (string ipAddress, int port, string platform, string friendlyName, object applicationContext)
 		{
 			return new Client(ipAddress, port, platform, friendlyName, applicationContext);
@@ -33,6 +35,8 @@ namespace Mesharp
 		public Client (string ipAddress, int port, string platform, string friendlyName, object applicationContext)
 		{
 			ApplicationContext = applicationContext;
+
+			Timeout = TimeSpan.FromSeconds(5);
 
 			ClientInfos = new ClientInfos()
 			{
@@ -54,36 +58,19 @@ namespace Mesharp
 
 
 
-		public class Request : Request<Message>
+		public class Response : Response<Message>
 		{
-			public Request(Guid messageToken) : base(messageToken){}
+			public Response(Message content) : base(content){}
 		}
 
-		public class Request<T> where T : class
+		public class Response<T> where T : class, new()
 		{
-			public Guid MessageToken { get; set; }
+			public T ResponseContent { get; set; }
 
-			public Request(Guid messageToken)
+			public Response(T content)
 			{
-				MessageToken = messageToken;
+				ResponseContent = content;
 			}
-
-			private event Action<T> _response;
-			public event Action<T> Response {
-				add 
-				{
-					_response += value;
-				}
-				remove
-				{
-					_response -= value;
-				}
-			}
-
-			public virtual void Do(T response)
-		    {
-				_response(response);
-		    }
 		}
 
 		private async Task Init ()
@@ -119,7 +106,7 @@ namespace Mesharp
 							throw new ErrorException (ErrorReason.OnConnection, "Cannot read remote stream");
 						}
 
-						var peerToken = Guid.Empty;
+						var originPeerToken = Guid.Empty;
 						var messageToken = Guid.Empty;
 						var bytesReadSoFar = new List<byte> (); // For Exception debugging purpose
 						var typeFullName = string.Empty;
@@ -175,7 +162,7 @@ namespace Mesharp
 							{
 								sixteenBytesBuffer = await ReadOrTimeout (client, sixteenBytesBuffer.Length, TimeSpan.FromSeconds (2)).ConfigureAwait (false);
 								bytesReadSoFar.AddRange (sixteenBytesBuffer.ToArray ());
-								peerToken = new Guid (sixteenBytesBuffer);
+								originPeerToken = new Guid (sixteenBytesBuffer);
 							} catch (Exception e)
 							{
 								throw new ErrorException (ErrorReason.OnReadMessageToken, e.Message);
@@ -225,19 +212,51 @@ namespace Mesharp
 								var typedMessage = JsonConvert.DeserializeObject (innerMessage, FindType (typeFullName));
 
 								// If the peertoken is not part of the list and non-empty, and we are not broadcasting, it is totally irrelevant for us.
-								if (peerToken != Guid.Empty && !Peers.Any (x => x.ClientInfos.PeerToken == peerToken) && !isBroadcast && typeFullName != typeof(ReturnPeer).FullName)
+								if (originPeerToken != Guid.Empty 
+								&& !Peers.Any (x => x.ClientInfos.PeerToken == originPeerToken) 
+								&& !isBroadcast 
+								&& typeFullName != typeof(ReturnPeer).FullName
+								&& typeFullName != typeof(ConnectWith).FullName) // Will need to resee the share vs not share peertoken
 								{
 									throw new ErrorException (ErrorReason.PeerNotFound, "Peer not found");
 								}
 
-								if (null == HandleMessage (typedMessage, peerToken, new Guid? (messageToken), isBroadcast))
+								if (messageToken != null && !isBroadcast && ResponseList.ContainsKey(messageToken))
+								{
+									ResponseList[messageToken] = typedMessage;
+								}
+
+
+								List<MessageResponse> responses = null;
+
+								if (null == (responses = HandleMessage (typedMessage, originPeerToken, new Guid? (messageToken), isBroadcast)))
 								{
 									throw new ErrorException (ErrorReason.NoHandlerForMessage, "This peer cannot handle your message of type " + typeFullName + " :" + (deserialized.ToString ().Length < 4096 ? (": " + deserialized.ToString ()) : ""));
 								}
 
 								try
 								{
-									HandleMessage (new Log (deserialized.ToString ()), peerToken, messageToken, false);
+									if (responses.Any())
+									{
+										foreach (var response in responses)
+										{
+											if (response.Message.ToString() == "OK")
+											{
+												continue;
+											}
+
+											if (response.IsBroadcast)
+											{
+												Broadcast(response.Message);	
+											} else
+											{
+												Send(response.Message, originPeerToken, messageToken);
+											}
+										}
+									}
+
+									//HandleMessage (new Log (deserialized.ToString ()), originPeerToken, messageToken, false);
+
 								} catch (Exception e)
 								{
 									throw new ErrorException (ErrorReason.OnHandlingMessage, e.Message);
@@ -309,7 +328,6 @@ namespace Mesharp
 			var mesharpDefinedTypes = this.GetType().GetTypeInfo().Assembly.DefinedTypes.ToList();
 			knownTypes.AddRange(mesharpDefinedTypes);
 			var typeInfo = knownTypes.FirstOrDefault(x => x.FullName == typeFullName);
-//			var typeInfo = typeof(Message).GetTypeInfo().Assembly.DefinedTypes.FirstOrDefault(x => x.FullName == typeFullName);
 			return typeInfo != null ? typeInfo.AsType() : null;
 		}
 
@@ -329,7 +347,9 @@ namespace Mesharp
 				ClientInfos = this.ClientInfos
 			};
 
-			var ret = Send<ReturnPeer, ReturnPeer>(new ReturnPeer(myPeer, Peers.ToArray()), otherPeer.ClientInfos.PeerToken, null);
+			e.Response = new MessageResponse(new ReturnPeer(myPeer, Peers.ToArray()), false);
+
+			//var ret = Send<ReturnPeer, ReturnPeer>(new ReturnPeer(myPeer, Peers.ToArray()), otherPeer.ClientInfos.PeerToken, null);
 		}
 
 		void OnReturnPeer (MessageToHandle<ReturnPeer> sender, MessageEventArgs<ReturnPeer> e)
@@ -401,53 +421,57 @@ namespace Mesharp
 			return true;
 		}
 
-		public Request<ReturnPeer> ConnectWith(ClientInfos destinationClientInfos)
+		public async Task<Response<ReturnPeer>> ConnectWith(ClientInfos destinationClientInfos)
 		{
-			return Send<ConnectWith, ReturnPeer>(new ConnectWith(ClientInfos, Peers.ToArray()), Guid.Empty, destinationClientInfos);
+			return await Send<ConnectWith, ReturnPeer>(new ConnectWith(ClientInfos, Peers.ToArray()), Guid.Empty, destinationClientInfos);
 		}
 
-		public Request<Message> Send<Req> (Req message) where Req : class {return Send<Req,Message>(message, Guid.NewGuid(), null);}
-		public Request<Resp> Send<Req, Resp> (Req message) where Req : class where Resp : class, new()
+		public async Task<Response<Message>> Send<Req> (Req message) where Req : class {return await Send<Req,Message>(message, Guid.NewGuid(), null);}
+		public async Task<Response<Resp>> Send<Req, Resp> (Req message) where Req : class where Resp : class, new()
 		{
-			return Send<Req, Resp>(message, Guid.Empty, Guid.NewGuid());
+			return await Send<Req, Resp>(message, Guid.Empty, Guid.NewGuid());
 		}
 
-		public Request<Message> Broadcast<Req> (Req message) where Req : class 
+		public async Task<Response<Message>> Broadcast<Req> (Req message) where Req : class 
 		{
-			return Send<Req, Message>(message);
+			return await Send<Req, Message>(message);
 		}
-		public Request<Resp> Broadcast<Req, Resp> (Req message) where Req : class where Resp : class, new()
+		public async Task<Response<Resp>> Broadcast<Req, Resp> (Req message) where Req : class where Resp : class, new()
 		{
-			return Send<Req, Resp>(message, Guid.Empty,  Guid.NewGuid());
+			return await Send<Req, Resp>(message, Guid.Empty, Guid.NewGuid());
 		}
 
-		public Request<Message> Send<Req> (Req message, Guid peerToken, Guid? messageToken = null) where Req : class {return Send<Req, Message>(message, peerToken, messageToken);}
-		public Request<Resp> Send<Req, Resp> (Req message, Guid peerToken, Guid? messageToken = null) where Req : class where Resp : class, new()
+		public async Task<Response<Message>> Send<Req> (Req message, Guid peerToken, Guid? messageToken = null) where Req : class {return await Send<Req, Message>(message, peerToken, messageToken);}
+		public async Task<Response<Resp>> Send<Req, Resp> (Req message, Guid peerToken, Guid? messageToken = null) where Req : class where Resp : class, new()
 		{
 			var peer = Peers.FirstOrDefault (x => x.ClientInfos.PeerToken == peerToken) ?? new Peer();
 
 			if (peerToken != Guid.Empty && peer.ClientInfos == null)
 			{
-				return new Request<Resp>(Guid.Empty);
+				return new Response<Resp>(new Resp());
 			}
 
-			return Send<Req, Resp>(message, messageToken, peer.ClientInfos);
+			return await Send<Req, Resp>(message, messageToken, peer.ClientInfos);
 		}
 
-		public Request<Message> Send <Req> (Req message, Guid? messageToken, ClientInfos destinationClientInfos) where Req : class{return Send<Req,Message>(message, messageToken, destinationClientInfos);}
-		public Request<Resp> Send <Req, Resp> (Req message, Guid? messageToken, ClientInfos destinationClientInfos) where Req : class where Resp : class, new()
+		public async Task<Response<Message>> Send <Req> (Req message, Guid? messageToken, ClientInfos destinationClientInfos) where Req : class{return await Send<Req,Message>(message, messageToken, destinationClientInfos);}
+		public async Task<Response<Resp>> Send <Req, Resp> (Req message, Guid? messageToken, ClientInfos destinationClientInfos) where Req : class where Resp : class, new()
 		{
 			var messageEnveloppe = new MessageEnveloppe (message);
 			var willBroadcast = destinationClientInfos == null;
 			var requestTypeSignature = willBroadcast ? Client.BroadcastSignature : Client.MessageSignature;
 			var jsonContent = JsonConvert.SerializeObject (messageEnveloppe);
 			var lenInBytes = Client.IntToBytes (jsonContent.Length);
-			var destinationPeerToken = willBroadcast ? Guid.Empty : destinationClientInfos.PeerToken;
+
+			// TODO: This part makes no sense. We should pass our token, not the destination info.
+			//var destinationPeerToken = willBroadcast ? Guid.Empty : destinationClientInfos.PeerToken;
+
+			var originPeerToken = willBroadcast ? Guid.Empty : ClientInfos.PeerToken;
 
 			var dataBuilder = new List<byte> ();
 			dataBuilder.AddRange (requestTypeSignature);
 			dataBuilder.AddRange (messageToken.GetValueOrDefault ().ToByteArray ());
-			dataBuilder.AddRange (destinationPeerToken.ToByteArray ());
+			dataBuilder.AddRange (originPeerToken.ToByteArray ());
 			dataBuilder.AddRange (lenInBytes);
 			dataBuilder.AddRange (System.Text.Encoding.UTF8.GetBytes (jsonContent));
 
@@ -461,7 +485,7 @@ namespace Mesharp
 				allClientInfos.Add (destinationClientInfos);
 			}
 
-			Task.Run (async () => {
+			await Task.Run (async () => {
 				foreach (var clientInfos in allClientInfos)
 				{
 					using (var client = new TcpSocketClient ())
@@ -474,11 +498,39 @@ namespace Mesharp
 				}
 			});
 
-			var mToken = messageToken.GetValueOrDefault();
-			if (mToken == Guid.Empty) mToken = Guid.NewGuid();
+			var mToken = messageToken.GetValueOrDefault ();
+			if (mToken == Guid.Empty)
+				mToken = Guid.NewGuid ();
 
-			return new Request<Resp>(mToken);
+			if (typeof(Resp) != typeof(Message) && mToken != Guid.Empty)
+			{
+				// Wait until the response is the response queue.
+
+				ResponseList [mToken] = null;
+
+				var timeStart = DateTimeOffset.UtcNow;
+				while (true)
+				{
+					if (ResponseList.ContainsKey (mToken) && ResponseList [mToken] != null)
+					{
+						var resp = ResponseList [mToken] as Resp;
+						ResponseList.Remove (mToken);
+						return new Response<Resp> (resp);
+					}
+
+					if (DateTimeOffset.UtcNow - timeStart > Timeout)
+					{
+						return new Response<Resp>(new Resp());
+					}
+
+					await Task.Delay(200);
+				}
+
+			}
+			return new Response<Resp>(new Resp());
 		}
+
+		Dictionary<Guid, object> ResponseList = new Dictionary<Guid, object>();
 
 		GenericsDictionary<Type> DelegateList = new GenericsDictionary<Type>();
 
@@ -491,7 +543,7 @@ namespace Mesharp
 
 		public HashSet<Guid> Broadcasted = new HashSet<Guid>();
 
-		public object HandleMessage (object messageObject, Guid peerToken, Guid? messageToken, bool isBroadcast = false)
+		public List<MessageResponse> HandleMessage (object messageObject, Guid peerToken, Guid? messageToken, bool isBroadcast = false)
 		{
 			if (isBroadcast)
 			{
@@ -513,8 +565,11 @@ namespace Mesharp
 //				var test = obj.GetType().GetRuntimeMethods();
 //			}
 
+			var responses = new List<MessageResponse> ();
+
 			if (DelegateList.ContainsItem (messageType))
 			{
+				
 				var eventHandlerCollection = ((IEnumerable)DelegateList.GetObject (messageType));
 
 				foreach (var eventHandler in eventHandlerCollection)
@@ -529,13 +584,26 @@ namespace Mesharp
 					peerTokenProperty.SetValue (messageEventArgs, peerToken, null);
 
 					var messageTokenProperty = messageEventArgs.GetType ().GetRuntimeProperty ("MessageToken");
-					messageTokenProperty.SetValue (messageEventArgs, messageToken.GetValueOrDefault(), null);
+					messageTokenProperty.SetValue (messageEventArgs, messageToken.GetValueOrDefault (), null);
 
 					onMessageEventMethod.Invoke (eventHandler, new object[1] { messageEventArgs });
-				}
 
-				return new Message("OK");
+					var response = (MessageResponse)messageEventArgs.GetType ().GetRuntimeProperty ("Response").GetValue (messageEventArgs);
+					if (response != null)
+					{
+						responses.Add (response);
+					} else
+					{
+						responses.Add (new MessageResponse("OK", false));
+					}
+				}
 			}
+
+			if (responses.Any ())
+			{
+				return responses;
+			}
+
 			return null;
 		}
 	}
