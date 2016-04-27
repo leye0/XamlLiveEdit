@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveXamlEdit.Forms.iOS", "i
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveXamlEdit.Forms.Droid", "Droid\LiveXamlEdit.Forms.Droid.csproj", "{C02E50EA-27A5-42FA-82AF-6108913B7183}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveXamlEdit.Desktop", "Editor\LiveXamlEdit.Desktop.csproj", "{BA412C47-FD5A-4F29-863F-01493B84928D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mesharp", "Mesharp\Mesharp.csproj", "{DC6B5E9C-4B3A-49D6-802F-215AC59AE8DC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveXamlEdit.Messaging", "LiveXamlEdit.MessageService\LiveXamlEdit.Messaging.csproj", "{6798ED4F-B72D-43D8-8D32-11FDE19B6126}"
@@ -93,22 +91,6 @@ Global
 		{B58DF385-677E-4613-B6BC-9819059454BF}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
 		{B58DF385-677E-4613-B6BC-9819059454BF}.Release|x86.ActiveCfg = Release|iPhone
 		{B58DF385-677E-4613-B6BC-9819059454BF}.Release|x86.Build.0 = Release|iPhone
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Debug|x86.Build.0 = Debug|Any CPU
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Release|iPhone.Build.0 = Release|Any CPU
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Release|x86.ActiveCfg = Release|Any CPU
-		{BA412C47-FD5A-4F29-863F-01493B84928D}.Release|x86.Build.0 = Release|Any CPU
 		{C02E50EA-27A5-42FA-82AF-6108913B7183}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C02E50EA-27A5-42FA-82AF-6108913B7183}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C02E50EA-27A5-42FA-82AF-6108913B7183}.Debug|iPhone.ActiveCfg = Debug|Any CPU

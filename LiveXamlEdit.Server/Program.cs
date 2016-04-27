@@ -9,8 +9,9 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Windows.Forms;
 using LiveXamlEdit.Messaging;
+using LiveXamlEdit.Server;
 
-namespace ReadAssembliesName
+namespace LiveXamlEdit.Server
 {
 	class MainClass
 	{

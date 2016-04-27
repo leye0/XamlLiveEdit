@@ -50,7 +50,7 @@ namespace LiveXamlEdit.Forms
 			_messaging.Client.AddHandler (new AssemblyFile ()).Received += OnAssemblyReceived;
 
 			// DEBUG - Connect directly with server
-			var r = await _messaging.Client.Connect("192.168.12.181", 11112);
+			var r = await _messaging.Client.Connect("192.168.2.17", 11112);
 		}
 
 		private void OnAssemblyReceived (MessageToHandle<AssemblyFile> sender, MessageEventArgs<AssemblyFile> e)
@@ -66,7 +66,7 @@ namespace LiveXamlEdit.Forms
 				var file = await fold.CreateFileAsync(name, CreationCollisionOption.ReplaceExisting);
 				file.WriteAllBytes(assemblyBytes);
 
-				Assembly.Load(new AssemblyName("DummyPresentation.DummyViewModels.dll"));	
+				Assembly.Load(new AssemblyName(name));	
 			});
 		}
 

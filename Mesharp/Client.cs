@@ -94,7 +94,7 @@ namespace Mesharp
 									FriendlyName = "",
 									IPAddress = client.RemoteAddress,
 									Port = client.RemotePort,
-									PeerToken = Guid.Empty,
+									PeerToken = Guid.NewGuid(),
 									Platform = "",
 									ConnectedOn = DateTimeOffset.MinValue
 								}
@@ -337,15 +337,15 @@ namespace Mesharp
 		// TODO: The logic is strange for the connection, but I want to be consistent with the API
 		public async Task<ReturnPeer> Connect (string ip, int port)
 		{
-			var clientInfos = new ClientInfos {
+			var destinationInfos = new ClientInfos {
 					IPAddress = ip,
 					Port = port
 				};
 
-			var response = await Send<ConnectWith, ReturnPeer> (new ConnectWith () { 
-				ClientInfos = clientInfos,
-				SharedPeers = Peers.ToArray()
-			}, Guid.NewGuid(), clientInfos);
+		var response = await Send<ConnectWith, ReturnPeer> (new ConnectWith () { 
+				ClientInfos = ClientInfos, // Source
+				SharedPeers = Peers.ToArray() // Destination
+			}, Guid.NewGuid(), destinationInfos);
 
 			return response.ResponseContent;
 		}
@@ -367,8 +367,6 @@ namespace Mesharp
 			};
 
 			e.Response = new MessageResponse(new ReturnPeer(myPeer, Peers.ToArray()), false);
-
-			//var ret = Send<ReturnPeer, ReturnPeer>(new ReturnPeer(myPeer, Peers.ToArray()), otherPeer.ClientInfos.PeerToken, null);
 		}
 
 		void OnReturnPeer (MessageToHandle<ReturnPeer> sender, MessageEventArgs<ReturnPeer> e)
@@ -459,6 +457,7 @@ namespace Mesharp
 		{
 			return await Send<Req, Resp>(message, Guid.Empty, Guid.NewGuid());
 		}
+
 
 		public async Task<Response<Message>> Send<Req> (Req message, Guid peerToken, Guid? messageToken = null) where Req : class {return await Send<Req, Message>(message, peerToken, messageToken);}
 		public async Task<Response<Resp>> Send<Req, Resp> (Req message, Guid peerToken, Guid? messageToken = null) where Req : class where Resp : class, new()
