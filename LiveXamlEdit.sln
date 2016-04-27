@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveXamlEdit.Messaging", "L
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LiveXamlEdit.Common", "LiveXamlEdit.Common\LiveXamlEdit.Common.shproj", "{CF44D2F0-5208-4F24-8042-A5ACB56808D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadAssembliesName", "ReadAssembliesName\ReadAssembliesName.csproj", "{9E89954F-DF86-4968-8A4A-736E954AA7A8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveXamlEdit.Server", "LiveXamlEdit.Server\LiveXamlEdit.Server.csproj", "{9E89954F-DF86-4968-8A4A-736E954AA7A8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

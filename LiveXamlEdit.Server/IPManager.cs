@@ -1,7 +1,7 @@
 ﻿using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
-namespace ReadAssembliesName
+namespace LiveXamlEdit.Server
 {
     class IPAddressManager : IIPAddressManager
     {

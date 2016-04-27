@@ -1,4 +1,4 @@
-﻿namespace ReadAssembliesName
+﻿namespace LiveXamlEdit.Server
 {
     public interface IIPAddressManager
     {
